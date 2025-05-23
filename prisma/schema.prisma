@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  password      String
+  role          String
+  email         String   @unique
+  name          String
+  studentID     String?  // Optional fields
+  institute     String?
+  department    String?
+  academicYear  String?
+  createdAt     DateTime @default(now())
+}
+
+model ApplicationForm {
+  id             String   @id @default(uuid())
+  studentID      String   @unique
+  userId         String?  // if you want to link to `User`
+  institute      String
+  department     String
+  admission      String
+  studyLevel     String
+  firstName      String
+  fatherName     String
+  gFatherName    String
+  sex            String
+  dob            DateTime
+  religion       String?
+  ethnic         String?
+  nationality    String
+  maritalStatus  String?
+  language1      String?
+  language2      String?
+
+  // Family
+  motherFirstName String
+  motherLastName  String
+  motherJob       String
+  fatherJob       String
+
+  // Contact
+  region           String
+  zone             String
+  woreda           String
+  town             String?
+  kebele           String?
+  phone            String
+  email            String?
+  studentPhone     String
+  studentEmail     String
+  isHandicapped    Boolean
+  handicapType     String?
+
+  // Emergency
+  contact1FirstName String
+  contact1FatherName String
+  contact1GfName     String
+  contact1Region     String
+  contact1Mobile     String
+  contact1Relation   String
+
+  // Education
+  enrolledBefore   Boolean
+  grade12result    String?
+  stream           String
+
+  // Sponsor
+  sponsor          String?
+  sponsorName      String?
+  sponsorRegion    String?
+  sponsorZone      String?
+  sponsorWoreda    String?
+  sponsorEmail     String?
+  sponsorURL       String?
+
+  // Declaration
+  signed          Boolean
+  studentPhotoUrl String?
+  degreeUrl       String?
+  diplomaUrl      String?
+  highSchoolTranscriptUrl String?
+  grade12ResultUrl String?
+
+  status         String  @default("pending")
+  academicYear   String
+  createdAt      DateTime @default(now())
+
+  secondarySchools       SecondarySchool[]
+  postSecondaryEducation PostSecondaryEducation[]
+}
+
+model SecondarySchool {
+  id               String @id @default(uuid())
+  applicationFormId String
+  gradeLevel       String
+  yearEC           String
+  schoolName       String
+  category         String
+  region           String
+  zone             String
+  woreda           String
+  town             String
+
+  applicationForm ApplicationForm @relation(fields: [applicationFormId], references: [id])
+}
+
+model PostSecondaryEducation {
+  id               String @id @default(uuid())
+  applicationFormId String
+  institutionName  String
+  country          String
+  fromEC           String?
+  toEC             String?
+  fromGC           String?
+  toGC             String?
+  cgpaEarned       String
+  maxCgpa          String?
+  award            String?
+
+  applicationForm ApplicationForm @relation(fields: [applicationFormId], references: [id])
+}
+
