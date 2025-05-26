@@ -60,7 +60,7 @@ export default function UndergraduatePage() {
             <div className="absolute bottom-4 right-4">
               <button
                 onClick={() => handleApply(college.name)}
-                className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:scale-105 transform transition-transform"
+                className="px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:scale-105 transform transition-transform"
               >
                 Apply Now
               </button>
