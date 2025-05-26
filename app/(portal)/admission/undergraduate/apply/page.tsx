@@ -121,10 +121,11 @@ export default function ApplicationFormPage() {
     signed: false,
     studentPhoto: null,
     educationDocs: {
-      degree: null,
       diploma: null,
       highSchoolTranscript: null,
       grade12th: null,
+      grade10th: null,
+      grade8th: null,
     },
     // Step 6
     status: "pending",
@@ -135,11 +136,7 @@ export default function ApplicationFormPage() {
   const validateStep0 = () => {
     const newErrors: { [key: string]: string } = {};
     // First Step
-    // if (!formData.institute) newErrors.institute = "Institute is required.";
-    // if (!formData.department) newErrors.department = "Department is required.";
-    // if (!formData.admission)
-    // newErrors.admission = "Admission type is required.";
-    // if (!formData.studyLevel) newErrors.studyLevel = "Study level is required.";
+    if (!formData.department) newErrors.department = "Department is required.";
     if (!formData.firstName) newErrors.firstName = "First name is required.";
     if (!formData.fatherName) newErrors.fatherName = "Father name is required.";
     if (!formData.gFatherName)
@@ -459,36 +456,51 @@ export default function ApplicationFormPage() {
             <h2 className=" font-bold text-blue-600 mb-6">
               1. Institute and Department Information
             </h2>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Department */}
               <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Department / Field of Study{" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                {!selectedCollege ? (
-                  <p className="text-red-500">
-                    Invalid college selected. Please go back and try again.
+              <label className="block mb-2 text-gray-700 font-semibold">
+                Department / Field of Study{" "}
+                <span className="text-red-500">*</span>
+              </label>
+              {!selectedCollege ? (
+                <p className="text-red-500">
+                Invalid college selected. Please go back and try again.
+                </p>
+              ) : (
+                <>
+                <select
+                  className="w-full p-3 border border-blue-300 rounded mb-6"
+                  value={selectedProgram}
+                  onChange={(e) => {
+                  setSelectedProgram(e.target.value);
+                  setFormData((prev: any) => ({
+                    ...prev,
+                    department: e.target.value,
+                  }));
+                  setErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors.department;
+                    return newErrors;
+                  });
+                  }}
+                >
+                  <option value="" disabled>
+                  -- Choose a department --
+                  </option>
+                  {selectedCollege.programs.map((program, idx) => (
+                  <option key={idx} value={program.name}>
+                    {program.name}
+                  </option>
+                  ))}
+                </select>
+                {errors.department && (
+                  <p className="text-red-500 text-sm mt-1">
+                  {errors.department}
                   </p>
-                ) : (
-                  <>
-                    <select
-                      className="w-full p-3 border border-blue-300 rounded mb-6"
-                      value={selectedProgram}
-                      onChange={(e) => setSelectedProgram(e.target.value)}
-                    >
-                      <option value="" disabled>
-                        -- Choose a department --
-                      </option>
-                      {selectedCollege.programs.map((program, idx) => (
-                        <option key={idx} value={program.name}>
-                          {program.name}
-                        </option>
-                      ))}
-                    </select>
-                  </>
                 )}
+                </>
+              )}
               </div>
             </div>
 
@@ -841,38 +853,41 @@ export default function ApplicationFormPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Sponsor */}
               <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Sponsor
-                </label>
-                <select
-                  name="sponsor"
-                  value={formData.sponsor}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                >
-                  <option value="">Select Sponsor</option>
-                  <option value="MOE">MOE</option>
-                  <option value="Self">Self</option>
-                  <option value="Other">Other</option>
-                </select>
+              <label className="block mb-2 text-gray-700 font-semibold">
+                Sponsor
+              </label>
+              <select
+                name="sponsor"
+                value={formData.sponsor}
+                onChange={handleChange}
+                className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+              >
+                <option value="">Select Sponsor</option>
+                <option value="MOE">MOE</option>
+                <option value="Self">Self</option>
+                <option value="Other">Other</option>
+              </select>
               </div>
-              {/* Sponsor Name (only if Other) */}
-              {formData.sponsor === "Other" && (
+              {/* Show sponsor fields only if not Self and not empty */}
+              {formData.sponsor && formData.sponsor !== "Self" && (
+              <>
+                {/* Sponsor Name (only if Other) */}
+                {formData.sponsor === "Other" && (
                 <div>
                   <label className="block mb-2 text-gray-700 font-semibold">
-                    Organization Name
+                  Organization Name
                   </label>
                   <input
-                    name="sponsorName"
-                    placeholder="Organization Name"
-                    onChange={handleChange}
-                    value={formData.sponsorName}
-                    className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                  name="sponsorName"
+                  placeholder="Organization Name"
+                  onChange={handleChange}
+                  value={formData.sponsorName}
+                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
                   />
                 </div>
-              )}
-              {/* Sponsor Region */}
-              <div>
+                )}
+                {/* Sponsor Region */}
+                <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
                   Sponsor Region
                 </label>
@@ -883,9 +898,9 @@ export default function ApplicationFormPage() {
                   value={formData.sponsorRegion}
                   className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
                 />
-              </div>
-              {/* Sponsor Zone */}
-              <div>
+                </div>
+                {/* Sponsor Zone */}
+                <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
                   Sponsor Zone
                 </label>
@@ -896,10 +911,9 @@ export default function ApplicationFormPage() {
                   value={formData.sponsorZone}
                   className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
                 />
-              </div>
-
-              {/* Sponsor Email */}
-              <div>
+                </div>
+                {/* Sponsor Email */}
+                <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
                   Sponsor Email
                 </label>
@@ -910,9 +924,9 @@ export default function ApplicationFormPage() {
                   value={formData.sponsorEmail}
                   className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
                 />
-              </div>
-              {/* Sponsor URL */}
-              <div>
+                </div>
+                {/* Sponsor URL */}
+                <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
                   Sponsor Website (URL)
                 </label>
@@ -923,7 +937,9 @@ export default function ApplicationFormPage() {
                   value={formData.sponsorURL}
                   className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
                 />
-              </div>
+                </div>
+              </>
+              )}
             </div>
           </>
         )}
@@ -1004,40 +1020,6 @@ export default function ApplicationFormPage() {
                 <div className="space-y-2">
                   <div>
                     <label className="block text-gray-600 text-sm mb-1">
-                      Degree <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      name="degree"
-                      onChange={(e) => {
-                        setFormData((prev: any) => ({
-                          ...prev,
-                          educationDocs: {
-                            ...prev.educationDocs,
-                            degree: e.target.files?.[0] || null,
-                          },
-                        }));
-                        setErrors((prev) => {
-                          const newErrors = { ...prev };
-                          delete newErrors.degree;
-                          return newErrors;
-                        });
-                      }}
-                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
-                    />
-                    {formData.educationDocs?.degree && (
-                      <span className="text-green-600 text-xs">
-                        Selected: {formData.educationDocs.degree.name}
-                      </span>
-                    )}
-                    {errors.degree && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.degree}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-600 text-sm mb-1">
                       Diploma (if any)
                     </label>
                     <input
@@ -1059,11 +1041,38 @@ export default function ApplicationFormPage() {
                         Selected: {formData.educationDocs.diploma.name}
                       </span>
                     )}
+                  </div> <div>
+                    <label className="block text-gray-600 text-sm mb-1">
+                      12th Grade Certificate
+                    </label>
+                    <input
+                      type="file"
+                      name="grade12result"
+                      onChange={(e) => {
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          educationDocs: {
+                            ...prev.educationDocs,
+                            grade12result: e.target.files?.[0] || null,
+                          },
+                        }));
+                        setErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.grade12result;
+                          return newErrors;
+                        });
+                      }}
+                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
+                    />
+                    {formData.educationDocs?.grade12result && (
+                      <span className="text-green-600 text-xs">
+                        Selected: {formData.educationDocs.grade12result.name}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <label className="block text-gray-600 text-sm mb-1">
-                      High School Transcript{" "}
-                      <span className="text-red-500">*</span>
+                      High School Transcript
                     </label>
                     <input
                       type="file"
@@ -1090,47 +1099,80 @@ export default function ApplicationFormPage() {
                         {formData.educationDocs.highSchoolTranscript.name}
                       </span>
                     )}
-                    {errors.highSchoolTranscript && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.highSchoolTranscript}
-                      </p>
-                    )}
+                   
                   </div>
+              
                   <div>
                     <label className="block text-gray-600 text-sm mb-1">
-                      12th Grade Certificate
+                      10th Grade Certificate
                       <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="file"
-                      name="grade12result"
+                      name="grade10result"
                       onChange={(e) => {
                         setFormData((prev: any) => ({
                           ...prev,
                           educationDocs: {
                             ...prev.educationDocs,
-                            grade12result: e.target.files?.[0] || null,
+                            grade10result: e.target.files?.[0] || null,
                           },
                         }));
                         setErrors((prev) => {
                           const newErrors = { ...prev };
-                          delete newErrors.grade12result;
+                          delete newErrors.grade10result;
                           return newErrors;
                         });
                       }}
                       className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
                     />
-                    {formData.educationDocs?.grade12result && (
+                    {formData.educationDocs?.grade10result && (
                       <span className="text-green-600 text-xs">
-                        Selected: {formData.educationDocs.grade12result.name}
+                        Selected: {formData.educationDocs.grade10result.name}
                       </span>
                     )}
-                    {errors.grade12result && (
+                    {errors.grade10result && (
                       <p className="text-red-500 text-sm mt-1">
-                        {errors.grade12result}
+                        {errors.grade10result}
                       </p>
                     )}
                   </div>
+
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">
+                      8th Grade Certificate
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="file"
+                      name="grade8result"
+                      onChange={(e) => {
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          educationDocs: {
+                            ...prev.educationDocs,
+                            grade8result: e.target.files?.[0] || null,
+                          },
+                        }));
+                        setErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.grade8result;
+                          return newErrors;
+                        });
+                      }}
+                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
+                    />
+                    {formData.educationDocs?.grade8result && (
+                      <span className="text-green-600 text-xs">
+                        Selected: {formData.educationDocs.grade8result.name}
+                      </span>
+                    )}
+                    {errors.grade8result && (
+                      <p className="text  -red-500 text-sm mt-1">
+                        {errors.grade8result}
+                      </p>
+                    )}
+                    </div>
                 </div>
               </div>
             </div>
