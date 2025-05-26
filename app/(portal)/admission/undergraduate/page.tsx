@@ -60,7 +60,7 @@ export default function UndergraduatePage() {
             <div className="absolute bottom-4 right-4">
               <button
                 onClick={() => handleApply(college.name)}
-                className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold rounded-full shadow-lg hover:scale-105 transform transition-transform"
+                className="px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-full shadow-lg hover:scale-105 transform transition-transform"
               >
                 Apply Now
               </button>
@@ -72,7 +72,7 @@ export default function UndergraduatePage() {
       <div className="mt-12 text-center">
         <button
           onClick={() => router.push('/admission')}
-          className="mt-4 px-6 py-3 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition-colors shadow-lg"
+          className="mt-4 px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow-lg"
         >
           Back to Admission
         </button>

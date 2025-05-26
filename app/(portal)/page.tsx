@@ -37,7 +37,7 @@ export default async function Home() {
                 className="object-cover w-full h-36"
                 priority
               />
-              <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-2 rounded-b-2xl flex flex-col items-center transition-colors duration-200 group-hover:from-blue-700 group-hover:to-blue-600">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-2 rounded-b-2xl flex flex-col items-center transition-colors duration-200 ">
                 <h2 className="text-2xl font-bold text-white mb-1 tracking-wide drop-shadow">
                   Admission
                 </h2>
@@ -58,7 +58,7 @@ export default async function Home() {
                 className="object-cover w-full h-36"
                 priority
               />
-              <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-2 rounded-b-2xl flex flex-col items-center transition-colors duration-200 group-hover:from-blue-700 group-hover:to-blue-600">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-2 rounded-b-2xl flex flex-col items-center transition-colors duration-200 ">
                 <h2 className="text-2xl font-bold text-white mb-1 tracking-wide drop-shadow">
                   Biography Collection
                 </h2>

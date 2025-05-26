@@ -162,11 +162,11 @@ export default function ApplicationFormPage() {
   const validateStep0 = () => {
     const newErrors: { [key: string]: string } = {};
     // First Step
-    if (!formData.institute) newErrors.institute = "Institute is required.";
-    if (!formData.department) newErrors.department = "Department is required.";
-    if (!formData.admission)
-      newErrors.admission = "Admission type is required.";
-    if (!formData.studyLevel) newErrors.studyLevel = "Study level is required.";
+    // if (!formData.institute) newErrors.institute = "Institute is required.";
+    // if (!formData.department) newErrors.department = "Department is required.";
+    // if (!formData.admission)
+    // newErrors.admission = "Admission type is required.";
+    // if (!formData.studyLevel) newErrors.studyLevel = "Study level is required.";
     if (!formData.firstName) newErrors.firstName = "First name is required.";
     if (!formData.fatherName) newErrors.fatherName = "Father name is required.";
     if (!formData.gFatherName)
@@ -174,19 +174,7 @@ export default function ApplicationFormPage() {
     if (!formData.sex) newErrors.sex = "Gender is required.";
     if (!formData.dob) newErrors.dob = "Date of birth is required.";
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
-  const validateStep1 = () => {
-    const newErrors: { [key: string]: string } = {};
-    // Second Step
-    if (!formData.motherFirstName)
-      newErrors.motherFirstName = "Mother's first name is required.";
-    if (!formData.motherLastName)
-      newErrors.motherLastName = "Mother's last name is required.";
-    if (!formData.motherJob) newErrors.motherJob = "Mother's job is required.";
-    if (!formData.fatherJob) newErrors.fatherJob = "Father's job is required.";
     if (!formData.studentPhone)
       newErrors.studentPhone = "Student phone number is required.";
 
@@ -200,31 +188,8 @@ export default function ApplicationFormPage() {
     if (!formData.region) newErrors.region = "Region is required.";
     if (!formData.zone) newErrors.zone = "Zone is required.";
     if (!formData.woreda) newErrors.woreda = "Woreda is required.";
-    if (!formData.phone) newErrors.phone = "Phone number is required.";
-    if (!formData.contact1FirstName)
-      newErrors.contact1FirstName = "Contact first name is required.";
-    if (!formData.contact1FatherName)
-      newErrors.contact1FatherName = "Contact father name is required.";
-    if (!formData.contact1GfName)
-      newErrors.contact1GfName = "Contact grandfather name is required.";
-    if (!formData.contact1Region)
-      newErrors.contact1Region = "Contact region is required.";
-    if (!formData.contact1Mobile)
-      newErrors.contact1Mobile = "Contact mobile number is required.";
-    if (!formData.contact1Relation)
-      newErrors.contact1Relation = "Contact relation is required.";
-    if (formData.isHandicapped === "Yes" && !formData.handicapType)
-      newErrors.handicapType = "Handicap type is required.";
-    if (!formData.isHandicapped)
-      newErrors.isHandicapped = "Handicapped status is required.";
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
-  // Step 2: Educational Information
-  const validateStep2 = () => {
-    const newErrors: { [key: string]: string } = {};
     // Educational Information
     if (!formData.enrolledBefore)
       newErrors.enrolledBefore = "Enrolled before is required.";
@@ -240,13 +205,14 @@ export default function ApplicationFormPage() {
       });
     }
 
-    if (!formData.stream) newErrors.stream = "Preparatory stream is required.";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Step 4: Declaration
-  const validateStep4 = () => {
+
+  // Step 1: Declaration
+  const validateStep1 = () => {
     const newErrors: { [key: string]: string } = {};
     // Declaration
     if (!formData.signed) newErrors.signed = "Signature is required.";
@@ -264,6 +230,8 @@ export default function ApplicationFormPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+
+
   //   Generate Ethiopian Year Suffix
   const getEthiopianYearSuffix = (): string => {
     const date = new Date();
@@ -277,7 +245,6 @@ export default function ApplicationFormPage() {
   };
 
   // Generate Student ID
-
   const generateStudentID = async (admissionType: string): Promise<string> => {
     const prefixMap: Record<string, string> = {
       "Regular – Full Time": "R",
@@ -366,8 +333,6 @@ export default function ApplicationFormPage() {
       if (!validateStep0()) return;
     } else if (step === 1) {
       if (!validateStep1()) return;
-    } else if (step === 2) {
-      if (!validateStep2()) return;
     }
 
     setStep((prev) => Math.min(prev + 1, steps.length - 1));
@@ -529,34 +494,6 @@ export default function ApplicationFormPage() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Institute */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Institute / School / College{" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="institute"
-                  value={formData.institute}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="" className="text-blue-200">
-                    Select Institute
-                  </option>
-                  {Object.keys(instituteDepartments).map((institute) => (
-                    <option key={institute} value={institute}>
-                      {institute}
-                    </option>
-                  ))}
-                </select>
-                {errors.institute && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.institute}
-                  </p>
-                )}
-              </div>
-
               {/* Department */}
               <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
@@ -583,67 +520,6 @@ export default function ApplicationFormPage() {
                 {errors.department && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.department}
-                  </p>
-                )}
-              </div>
-
-              {/* Admission Type */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Admission Classification{" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="admission"
-                  value={formData.admission}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="" className="text-blue-200">
-                    Select Admission Type
-                  </option>
-                  <option value="Regular – Full Time">
-                    Regular – Full Time
-                  </option>
-                  <option value="Extension – Weekend">
-                    Extension – Weekend
-                  </option>
-                  <option value="Extension – Night">Extension – Night</option>
-                  <option value="Distance">Distance</option>
-                  <option value="Summer">Summer</option>
-                </select>
-                {errors.admission && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.admission}
-                  </p>
-                )}
-              </div>
-
-              {/* Study Level */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Study Level <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="studyLevel"
-                  value={formData.studyLevel}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="" className="text-blue-200">
-                    Select Study Level
-                  </option>
-                  <option value="Post Graduate Diploma">
-                    Post Graduate Diploma
-                  </option>
-                  <option value="Bachelor Degree">Bachelor Degree</option>
-                  <option value="Master’s Degree">Master’s Degree</option>
-                  <option value="PhD">PhD</option>
-                  <option value="Other">Other</option>
-                </select>
-                {errors.studyLevel && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.studyLevel}
                   </p>
                 )}
               </div>
@@ -744,89 +620,6 @@ export default function ApplicationFormPage() {
                   <p className="text-red-500 text-sm mt-1">{errors.sex}</p>
                 )}
               </div>
-            </div>
-          </>
-        )}
-
-        {/* Step 1: Family Info */}
-        {step === 1 && (
-          <>
-            <h2 className="font-bold text-blue-600 mb-6">
-              2. Family Information
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Mother's First Name */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Mother's First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="motherFirstName"
-                  placeholder="Enter mother's first name"
-                  onChange={handleChange}
-                  value={formData.motherFirstName}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.motherFirstName && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.motherFirstName}
-                  </p>
-                )}
-              </div>
-              {/* Mother's Last Name */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Mother's Last Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="motherLastName"
-                  placeholder="Enter mother's last name"
-                  onChange={handleChange}
-                  value={formData.motherLastName}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.motherLastName && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.motherLastName}
-                  </p>
-                )}
-              </div>
-              {/* Mother's Job */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Mother's Occupation <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="motherJob"
-                  placeholder="Enter mother's occupation"
-                  onChange={handleChange}
-                  value={formData.motherJob}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.motherJob && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.motherJob}
-                  </p>
-                )}
-              </div>
-              {/* Father's Job */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Father's Occupation <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="fatherJob"
-                  placeholder="Enter father's occupation"
-                  onChange={handleChange}
-                  value={formData.fatherJob}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.fatherJob && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.fatherJob}
-                  </p>
-                )}
-              </div>
               {/* Student Phone */}
               <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
@@ -837,7 +630,7 @@ export default function ApplicationFormPage() {
                   type="tel"
                   autoCapitalize="none"
                   autoComplete="off"
-                  placeholder="Enter student phone number"
+                  placeholder="+251 9XX XXX XXX"
                   onChange={handleChange}
                   value={formData.studentPhone}
                   className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
@@ -871,7 +664,7 @@ export default function ApplicationFormPage() {
               </div>
             </div>
             <h2 className="font-bold text-blue-600 mb-6 mt-8">
-              2.1. Address & Additional Info
+              1.2. Address & Additional Info
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Region */}
@@ -922,232 +715,9 @@ export default function ApplicationFormPage() {
                   <p className="text-red-500 text-sm mt-1">{errors.woreda}</p>
                 )}
               </div>
-              {/* Town */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Town
-                </label>
-                <input
-                  name="town"
-                  placeholder="Enter town"
-                  onChange={handleChange}
-                  value={formData.town}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-              </div>
-              {/* Kebele */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Kebele
-                </label>
-                <input
-                  name="kebele"
-                  placeholder="Enter kebele"
-                  onChange={handleChange}
-                  value={formData.kebele}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-              </div>
-              {/* Phone */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Parent/Guardian Phone <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="phone"
-                  type="tel"
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  spellCheck="false"
-                  placeholder="Enter phone number"
-                  onChange={handleChange}
-                  value={formData.phone}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.phone && (
-                  <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-                )}
-              </div>
-              {/* Email */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Parent/Guardian Email
-                </label>
-                <input
-                  name="email"
-                  type="email"
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  spellCheck="false"
-                  placeholder="Enter email"
-                  onChange={handleChange}
-                  value={formData.email}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-              </div>
-              {/* Handicapped */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Are you handicapped?
-                </label>
-                <select
-                  name="isHandicapped"
-                  value={formData.isHandicapped}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                >
-                  <option value="No">No</option>
-                  <option value="Yes">Yes</option>
-                </select>
-                {errors.isHandicapped && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.isHandicapped}
-                  </p>
-                )}
-              </div>
-              {/* Handicap Type */}
-              {formData.isHandicapped === "Yes" && (
-                <div>
-                  <label className="block mb-2 text-gray-700 font-semibold">
-                    Handicap Type <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    name="handicapType"
-                    placeholder="Specify handicap type"
-                    onChange={handleChange}
-                    value={formData.handicapType}
-                    className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                  />
-                  {errors.handicapType && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.handicapType}
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
-            <h2 className="font-bold text-blue-600 mb-6 mt-8">
-              2.2. Emergency Contact
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Contact 1 First Name */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Contact First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="contact1FirstName"
-                  placeholder="Enter contact first name"
-                  onChange={handleChange}
-                  value={formData.contact1FirstName}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.contact1FirstName && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.contact1FirstName}
-                  </p>
-                )}
-              </div>
-              {/* Contact 1 Father Name */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Contact Father Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="contact1FatherName"
-                  placeholder="Enter contact father name"
-                  onChange={handleChange}
-                  value={formData.contact1FatherName}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.contact1FatherName && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.contact1FatherName}
-                  </p>
-                )}
-              </div>
-              {/* Contact 1 Grandfather Name */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Contact Grandfather Name{" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="contact1GfName"
-                  placeholder="Enter contact grandfather name"
-                  onChange={handleChange}
-                  value={formData.contact1GfName}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.contact1GfName && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.contact1GfName}
-                  </p>
-                )}
-              </div>
-              {/* Contact 1 Region */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Contact Region <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="contact1Region"
-                  placeholder="Enter contact region"
-                  onChange={handleChange}
-                  value={formData.contact1Region}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.contact1Region && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.contact1Region}
-                  </p>
-                )}
-              </div>
-              {/* Contact 1 Mobile */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Contact Mobile <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="contact1Mobile"
-                  placeholder="Enter contact mobile"
-                  onChange={handleChange}
-                  value={formData.contact1Mobile}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.contact1Mobile && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.contact1Mobile}
-                  </p>
-                )}
-              </div>
-              {/* Contact 1 Relation */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Relation to Student <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="contact1Relation"
-                  placeholder="Enter relation"
-                  onChange={handleChange}
-                  value={formData.contact1Relation}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.contact1Relation && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.contact1Relation}
-                  </p>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Step 2: Education Info */}
-        {step === 2 && (
-          <>
-            <h2 className="text-2xl font-bold text-blue-600 mb-6">
-              3. Education Information
+            <h2 className="text font-bold text-blue-600 mb-6">
+              1.3. Education Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Enrolled Before */}
@@ -1178,134 +748,82 @@ export default function ApplicationFormPage() {
                   (edu: any, idx: number) => (
                     <div
                       key={idx}
-                      className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4"
+                      className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"
                     >
-                      <input
-                        name={`postSecondaryEducation[${idx}].institutionName`}
-                        placeholder="Institution Name *"
-                        value={edu.institutionName}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFormData((prev: any) => {
-                            const arr = [...prev.postSecondaryEducation];
-                            arr[idx].institutionName = value;
-                            return { ...prev, postSecondaryEducation: arr };
-                          });
-                        }}
-                        className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
-                      />
-                      <input
-                        name={`postSecondaryEducation[${idx}].country`}
-                        placeholder="Country *"
-                        value={edu.country}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFormData((prev: any) => {
-                            const arr = [...prev.postSecondaryEducation];
-                            arr[idx].country = value;
-                            return { ...prev, postSecondaryEducation: arr };
-                          });
-                        }}
-                        className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
-                      />
-                      <input
-                        name={`postSecondaryEducation[${idx}].fromEC`}
-                        placeholder="From (E.C.) "
-                        value={edu.fromEC}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFormData((prev: any) => {
-                            const arr = [...prev.postSecondaryEducation];
-                            arr[idx].fromEC = value;
-                            return { ...prev, postSecondaryEducation: arr };
-                          });
-                        }}
-                        className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
-                      />
-                      <input
-                        name={`postSecondaryEducation[${idx}].toEC`}
-                        placeholder="To (E.C.) "
-                        value={edu.toEC}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFormData((prev: any) => {
-                            const arr = [...prev.postSecondaryEducation];
-                            arr[idx].toEC = value;
-                            return { ...prev, postSecondaryEducation: arr };
-                          });
-                        }}
-                        className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
-                      />
-                      <input
-                        name={`postSecondaryEducation[${idx}].fromGC`}
-                        placeholder="From (G.C.)"
-                        value={edu.fromGC}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFormData((prev: any) => {
-                            const arr = [...prev.postSecondaryEducation];
-                            arr[idx].fromGC = value;
-                            return { ...prev, postSecondaryEducation: arr };
-                          });
-                        }}
-                        className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
-                      />
-                      <input
-                        name={`postSecondaryEducation[${idx}].toGC`}
-                        placeholder="To (G.C.)"
-                        value={edu.toGC}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFormData((prev: any) => {
-                            const arr = [...prev.postSecondaryEducation];
-                            arr[idx].toGC = value;
-                            return { ...prev, postSecondaryEducation: arr };
-                          });
-                        }}
-                        className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
-                      />
-                      <input
-                        name={`postSecondaryEducation[${idx}].cgpaEarned`}
-                        placeholder="CGPA Earned *"
-                        value={edu.cgpaEarned}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFormData((prev: any) => {
-                            const arr = [...prev.postSecondaryEducation];
-                            arr[idx].cgpaEarned = value;
-                            return { ...prev, postSecondaryEducation: arr };
-                          });
-                        }}
-                        className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
-                      />
-                      <input
-                        name={`postSecondaryEducation[${idx}].maxCgpa`}
-                        placeholder="Max CGPA"
-                        value={edu.maxCgpa}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFormData((prev: any) => {
-                            const arr = [...prev.postSecondaryEducation];
-                            arr[idx].maxCgpa = value;
-                            return { ...prev, postSecondaryEducation: arr };
-                          });
-                        }}
-                        className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
-                      />
-                      <input
-                        name={`postSecondaryEducation[${idx}].award`}
-                        placeholder="Award"
-                        value={edu.award}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setFormData((prev: any) => {
-                            const arr = [...prev.postSecondaryEducation];
-                            arr[idx].award = value;
-                            return { ...prev, postSecondaryEducation: arr };
-                          });
-                        }}
-                        className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
-                      />
+                      <div>
+                        <label className="block mb-2 text-gray-700 font-semibold">
+                          University Name{" "}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          name={`postSecondaryEducation[${idx}].institutionName`}
+                          placeholder="Institution Name *"
+                          value={edu.institutionName}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev: any) => {
+                              const arr = [...prev.postSecondaryEducation];
+                              arr[idx].institutionName = value;
+                              return { ...prev, postSecondaryEducation: arr };
+                            });
+                          }}
+                          className="p-2 w-full rounded-lg border-2 border-blue-300 text-gray-700"
+                        />
+                        {errors[`institutionName_${idx}`] && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors[`institutionName_${idx}`]}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block mb-2 text-gray-700 font-semibold">
+                          Country <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          name={`postSecondaryEducation[${idx}].country`}
+                          placeholder="Enter country"
+                          value={edu.country}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev: any) => {
+                              const arr = [...prev.postSecondaryEducation];
+                              arr[idx].country = value;
+                              return { ...prev, postSecondaryEducation: arr };
+                            });
+                          }}
+                          className="p-2 w-full rounded-lg border-2 border-blue-300 text-gray-700"
+                        />
+                        {errors[`country_${idx}`] && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors[`country_${idx}`]}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block mb-2 text-gray-700 font-semibold">
+                          CGPA Earned <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          name={`postSecondaryEducation[${idx}].cgpaEarned`}
+                          placeholder="CGPA Result"
+                          value={edu.cgpaEarned}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setFormData((prev: any) => {
+                              const arr = [...prev.postSecondaryEducation];
+                              arr[idx].cgpaEarned = value;
+                              return { ...prev, postSecondaryEducation: arr };
+                            });
+                          }}
+                          className="p-2 rounded-lg border-2 border-blue-300 text-gray-700"
+                        />
+                        {errors[`cgpaEarned_${idx}`] && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors[`cgpaEarned_${idx}`]}
+                          </p>
+                        )}
+                      </div>
                       {/* Remove button */}
                       {formData.postSecondaryEducation.length > 1 && (
                         <button
@@ -1319,7 +837,7 @@ export default function ApplicationFormPage() {
                                 ),
                             }));
                           }}
-                          className="text-red-500 font-bold"
+                          className="text-red-500 font-bold self-end px-4 py-2 w-fit rounded bg-red-100 hover:bg-red-200"
                         >
                           Remove
                         </button>
@@ -1337,13 +855,7 @@ export default function ApplicationFormPage() {
                         {
                           institutionName: "",
                           country: "",
-                          fromEC: "",
-                          toEC: "",
-                          fromGC: "",
-                          toGC: "",
                           cgpaEarned: "",
-                          maxCgpa: "",
-                          award: "",
                         },
                       ],
                     }));
@@ -1355,220 +867,8 @@ export default function ApplicationFormPage() {
               </div>
             )}
 
-            {/* Secondary School Information */}
-            <div className="mt-8">
-              <h3 className="font-semibold text-blue-500 mb-2">
-                Secondary School Information (Grades 10-12)
-              </h3>
-              {formData.secondarySchools.map((school: any, idx: number) => (
-                <details
-                  key={idx}
-                  className="mb-4 bg-white rounded-xl shadow border border-blue-200"
-                  open={idx === 0}
-                >
-                  <summary className="flex items-center cursor-pointer px-6 py-4 select-none">
-                    {/* <span className="inline-flex items-center justify-center w-10 h-8 rounded  bg-blue-500 text-white font-bold mr-3">
-                            {school.gradeLevel}
-                        </span> */}
-                    <span className="font-semibold text-blue-700">
-                      Grade {school.gradeLevel}
-                    </span>
-                    <span className="ml-auto text-blue-400 text-sm">
-                      (Click to expand/collapse)
-                    </span>
-                  </summary>
-                  <div className="px-6 pb-6 pt-2">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-gray-700 font-semibold mb-1">
-                          Year (E.C.)
-                        </label>
-                        <input
-                          name={`secondarySchools[${idx}].yearEC`}
-                          placeholder="Year (E.C.)"
-                          value={school.yearEC}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev: any) => {
-                              const arr = [...prev.secondarySchools];
-                              arr[idx].yearEC = value;
-                              return { ...prev, secondarySchools: arr };
-                            });
-                          }}
-                          className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:ring-2 focus:ring-blue-400"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 font-semibold mb-1">
-                          School Name
-                        </label>
-                        <input
-                          name={`secondarySchools[${idx}].schoolName`}
-                          placeholder="School Name"
-                          value={school.schoolName}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev: any) => {
-                              const arr = [...prev.secondarySchools];
-                              arr[idx].schoolName = value;
-                              return { ...prev, secondarySchools: arr };
-                            });
-                          }}
-                          className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:ring-2 focus:ring-blue-400"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 font-semibold mb-1">
-                          Category
-                        </label>
-                        <select
-                          name={`secondarySchools[${idx}].category`}
-                          value={school.category}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev: any) => {
-                              const arr = [...prev.secondarySchools];
-                              arr[idx].category = value;
-                              return { ...prev, secondarySchools: arr };
-                            });
-                          }}
-                          className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:ring-2 focus:ring-blue-400"
-                        >
-                          <option value="">Select</option>
-                          {secondarySchoolCategories.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 font-semibold mb-1">
-                          Region
-                        </label>
-                        <input
-                          name={`secondarySchools[${idx}].region`}
-                          placeholder="Region"
-                          value={school.region}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev: any) => {
-                              const arr = [...prev.secondarySchools];
-                              arr[idx].region = value;
-                              return { ...prev, secondarySchools: arr };
-                            });
-                          }}
-                          className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:ring-2 focus:ring-blue-400"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 font-semibold mb-1">
-                          Zone
-                        </label>
-                        <input
-                          name={`secondarySchools[${idx}].zone`}
-                          placeholder="Zone"
-                          value={school.zone}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev: any) => {
-                              const arr = [...prev.secondarySchools];
-                              arr[idx].zone = value;
-                              return { ...prev, secondarySchools: arr };
-                            });
-                          }}
-                          className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:ring-2 focus:ring-blue-400"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 font-semibold mb-1">
-                          Woreda
-                        </label>
-                        <input
-                          name={`secondarySchools[${idx}].woreda`}
-                          placeholder="Woreda"
-                          value={school.woreda}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev: any) => {
-                              const arr = [...prev.secondarySchools];
-                              arr[idx].woreda = value;
-                              return { ...prev, secondarySchools: arr };
-                            });
-                          }}
-                          className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:ring-2 focus:ring-blue-400"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-gray-700 font-semibold mb-1">
-                          Town
-                        </label>
-                        <input
-                          name={`secondarySchools[${idx}].town`}
-                          placeholder="Town"
-                          value={school.town}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            setFormData((prev: any) => {
-                              const arr = [...prev.secondarySchools];
-                              arr[idx].town = value;
-                              return { ...prev, secondarySchools: arr };
-                            });
-                          }}
-                          className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:ring-2 focus:ring-blue-400"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </details>
-              ))}
-            </div>
-
-            {/* Grade 12th Results */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  G12th Result
-                </label>
-                <input
-                  name="grade12result"
-                  placeholder="Grade 12 Result"
-                  onChange={handleChange}
-                  value={formData.grade12result}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-              </div>
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Preparatory School Stream{" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="stream"
-                  value={formData.stream}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                >
-                  <option value="">Select Stream</option>
-                  {preparatoryStreams.map((stream) => (
-                    <option key={stream} value={stream}>
-                      {stream}
-                    </option>
-                  ))}
-                </select>
-                {errors.stream && (
-                  <p className="text-red-500 text-sm mt-1">{errors.stream}</p>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Step 3: Sponsor Info */}
-        {step === 3 && (
-          <>
-            <h2 className="text-2xl font-bold text-blue-600 mb-6">
-              4. Sponsor Information
+            <h2 className=" font-bold text-blue-600 mb-6">
+              1.4. Sponsor Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Sponsor */}
@@ -1660,11 +960,10 @@ export default function ApplicationFormPage() {
           </>
         )}
 
-        {/* Step 4: Declaration & Upload */}
-        {step === 4 && (
+        {step === 1 && (
           <>
-            <h2 className="text-2xl font-bold text-blue-600 mb-6">
-              5. Declaration & Uploads
+            <h2 className=" font-bold text-blue-600 mb-6">
+              2. Declaration & Uploads
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Student Photo */}
@@ -1730,7 +1029,7 @@ export default function ApplicationFormPage() {
               {/* Education Docs */}
               <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
-                  Upload Education Documents{" "}
+                  Upload Education Documents
                   <span className="text-red-500">*</span>
                 </label>
                 <div className="space-y-2">
