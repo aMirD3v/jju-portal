@@ -1027,6 +1027,7 @@ export default function ApplicationFormPage() {
                 )}
               </div>
               {/* Education Docs */}
+              
               <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
                   Upload Education Documents
