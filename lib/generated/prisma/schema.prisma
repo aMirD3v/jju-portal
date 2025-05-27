@@ -14,16 +14,69 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model StudentApplication {
+  id          String    @id @default(uuid())
+  studentID   String    @unique
+  institute   String
+  department  String
+  admission   String
+  studyLevel  String
+  firstName   String
+  fatherName  String
+  gFatherName String
+  sex         String
+  dob         DateTime?
+
+  region        String
+  zone          String
+  woreda        String
+  studentPhone  String
+  studentEmail  String
+  isHandicapped String
+  handicapType  String?
+
+  enrolledBefore String
+  postSecondary  PostSecondaryEducation[]
+
+  sponsor       String?
+  sponsorName   String?
+  sponsorRegion String?
+  sponsorZone   String?
+  sponsorWoreda String?
+  sponsorEmail  String?
+  sponsorURL    String?
+
+  signed          Boolean
+  studentPhotoUrl String? // File uploads handled via cloud storage
+  diplomaUrl      String?
+  highSchoolUrl   String?
+  grade12Url      String?
+  grade10Url      String?
+  grade8Url       String?
+
+  status    String
+  createdAt DateTime @default(now())
+}
+
+model PostSecondaryEducation {
+  id              String             @id @default(uuid())
+  application     StudentApplication @relation(fields: [applicationId], references: [id])
+  applicationId   String
+  institutionName String
+  country         String
+  cgpaEarned      String
+}
+
 model User {
   id           String   @id @default(uuid())
   username     String   @unique
   password     String
   role         String
-  email        String   @unique
+  email        String
   name         String
-  studentID    String? // Optional fields
-  institute    String?
-  department   String?
-  academicYear String?
+  studentID    String
+  institute    String
+  department   String
+  academicYear String
   createdAt    DateTime @default(now())
 }

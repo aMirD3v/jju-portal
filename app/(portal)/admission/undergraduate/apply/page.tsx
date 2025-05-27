@@ -73,7 +73,9 @@ export default function ApplicationFormPage() {
   const [formData, setFormData] = useState<any>({
     // Step 1
     studentID: "",
-    institute: "",
+    institute: colleges.find((c) => c.name === selectedCollegeName)
+      ? selectedCollegeName
+      : "",
     department: "",
     admission: "",
     studyLevel: "",
@@ -82,12 +84,6 @@ export default function ApplicationFormPage() {
     gFatherName: "",
     sex: "",
     dob: "",
-    religion: "",
-    ethnic: "",
-    nationality: "Ethiopian",
-    maritalStatus: "",
-    language1: "",
-    language2: "",
 
     // Step 2
     region: "",
@@ -119,14 +115,14 @@ export default function ApplicationFormPage() {
 
     // Step 5
     signed: false,
-    studentPhoto: null,
-    educationDocs: {
-      diploma: null,
-      highSchoolTranscript: null,
-      grade12th: null,
-      grade10th: null,
-      grade8th: null,
-    },
+    // studentPhoto: null,
+    // educationDocs: {
+    //   diploma: null,
+    //   highSchoolTranscript: null,
+    //   grade12th: null,
+    //   grade10th: null,
+    //   grade8th: null,
+    // },
     // Step 6
     status: "pending",
   });
@@ -181,16 +177,16 @@ export default function ApplicationFormPage() {
   const validateStep1 = () => {
     const newErrors: { [key: string]: string } = {};
     // Declaration
-    if (!formData.signed) newErrors.signed = "Signature is required.";
-    // Uploaded files
-    if (!formData.studentPhoto)
-      newErrors.studentPhoto = "Student photo is required.";
-    if (!formData.educationDocs.degree)
-      newErrors.degree = "Degree document is required.";
-    if (!formData.educationDocs.highSchoolTranscript)
-      newErrors.highSchoolTranscript = "High school transcript is required.";
-    if (!formData.educationDocs.grade12result)
-      newErrors.grade12result = "Grade 12th is required.";
+    // if (!formData.signed) newErrors.signed = "Signature is required.";
+    // // Uploaded files
+    // if (!formData.studentPhoto)
+    //   newErrors.studentPhoto = "Student photo is required.";
+    // if (!formData.educationDocs.degree)
+    //   newErrors.degree = "Degree document is required.";
+    // if (!formData.educationDocs.highSchoolTranscript)
+    //   newErrors.highSchoolTranscript = "High school transcript is required.";
+    // if (!formData.educationDocs.grade12result)
+    //   newErrors.grade12result = "Grade 12th is required.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -331,62 +327,18 @@ export default function ApplicationFormPage() {
 
     const uniqueID = await generateStudentID(formData.admission);
 
-    try {
-      // ✅ Save student form data to Realtime DB
-      const safeID = uniqueID.replace(/\//g, "_");
-      const AcYear = EthioYYYY();
-      await set(
-        ref(
-          rtdb,
-          `Post-Graduate-Admission/${formData.institute}/${formData.department}/${AcYear}/${safeID}`
-        ),
-        {
-          ...formData,
-          createdAt: new Date().toISOString(),
-          studentID: uniqueID,
-        }
-      );
-      // ✅ Save student ID to Realtime DB to avoid duplicates
-      await set(ref(rtdb, `students/${safeID}`), {
-        createdAt: new Date().toISOString(),
-        studentID: uniqueID,
-      });
-      // ✅ Save login credentials to Firestore
-      await addDoc(collection(db, "users"), {
-        username: uniqueID,
-        password: hashedPassword,
-        role: "student",
-        email: formData.email,
-        name: `${formData.firstName} ${formData.fatherName}`,
-        studentID: uniqueID,
-        institute: formData.institute,
-        department: formData.department,
-        academicYear: EthioYYYY(), // custom function from your code
-      });
+  await fetch("/api/submit-application/under-apply", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    ...formData,
+    password, // plain password
+    academicYear: EthioYYYY(),
+  }),
+});
 
-      // send username and password to the user's email
-      await fetch("/api/send-credentials", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          username: uniqueID,
-          password,
-          name: `${formData.firstName} ${formData.fatherName}`,
-        }),
-      });
-
-      alert(
-        `Student registered!\nUsername: ${uniqueID}\nPassword: ${password}`
-      );
-      console.log("Submitting form data:", formData);
-      router.push("/admission/success");
-    } catch (err) {
-      console.error("Submission failed:", err);
-      alert("Failed to submit. See console for details.");
-    }
   };
 
   return (
@@ -417,12 +369,12 @@ export default function ApplicationFormPage() {
               <input
                 type="email"
                 name="email"
-                value={formData.email}
+                value={formData.studentEmail}
                 onChange={handleChange}
                 className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
                 placeholder="Enter your email"
               />
-              {!formData.email && (
+              {!formData.studentEmail && (
                 <p className="text-red-500 text-sm mt-1">Email is required.</p>
               )}
             </div>
@@ -436,7 +388,7 @@ export default function ApplicationFormPage() {
               </button>
               <button
                 onClick={(e) => {
-                  if (!formData.email) return; // Prevent submit if email is empty
+                  if (!formData.studentEmail) return; // Prevent submit if email is empty
                   setShowConfirmModal(false);
                   handleSubmit(e as any);
                 }}
@@ -502,6 +454,52 @@ export default function ApplicationFormPage() {
                 </>
               )}
               </div>
+              <div>
+                <label className="block mb-2 text-gray-700 font-semibold">
+                  Admission Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="admission"
+                  value={formData.admission}
+                  onChange={handleChange}
+                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="" className="text-blue-200">
+                    Select Admission Type
+                  </option>
+                  <option value="Regular – Full Time">
+                    Regular – Full Time
+                  </option>
+                  <option value="Extension – Weekend">
+                    Extension – Weekend
+                  </option>
+                  <option value="Extension – Night">Extension – Night</option>
+                  <option value="Distance">Distance</option>
+                  <option value="Summer">Summer</option>
+                </select>
+                {errors.admission && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.admission}
+                  </p>
+                )}
+                </div>
+
+                <div>
+  <label className="block mb-2 text-gray-700 font-semibold">
+    Student ID <span className="text-red-500">*</span>
+  </label>
+  <input
+    name="studentID"
+    value={formData.studentID}
+    onChange={handleChange}
+    placeholder="e.g., R/0001/17"
+    className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+  />
+  {errors.studentID && (
+    <p className="text-red-500 text-sm mt-1">{errors.studentID}</p>
+  )}
+</div>
+
             </div>
 
             {/* Personal Information */}
@@ -1210,11 +1208,11 @@ export default function ApplicationFormPage() {
             Back
           </button>
 
-          {step === steps.length - 1 ? (
+          {step ===  1 ? (
             <button
               type="button"
               onClick={() => {
-                if (!validateStep4()) return; // Validate before submission
+                if (!validateStep1()) return; // Validate before submission
                 setShowConfirmModal(true);
               }}
               className="px-6 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold"
