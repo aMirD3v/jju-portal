@@ -27,13 +27,11 @@ model StudentApplication {
   sex         String
   dob         DateTime?
 
-  region        String
-  zone          String
-  woreda        String
-  studentPhone  String
-  studentEmail  String
-  isHandicapped String
-  handicapType  String?
+  region       String
+  zone         String
+  woreda       String
+  studentPhone String
+  studentEmail String
 
   enrolledBefore String
   postSecondary  PostSecondaryEducation[]
@@ -68,15 +66,11 @@ model PostSecondaryEducation {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  username     String   @unique
-  password     String
-  role         String
-  email        String
-  name         String
-  studentID    String
-  institute    String
-  department   String
-  academicYear String
-  createdAt    DateTime @default(now())
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      String
+  email     String
+  name      String
+  createdAt DateTime @default(now())
 }

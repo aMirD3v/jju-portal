@@ -1108,8 +1108,6 @@ export namespace Prisma {
     woreda: string | null
     studentPhone: string | null
     studentEmail: string | null
-    isHandicapped: string | null
-    handicapType: string | null
     enrolledBefore: string | null
     sponsor: string | null
     sponsorName: string | null
@@ -1146,8 +1144,6 @@ export namespace Prisma {
     woreda: string | null
     studentPhone: string | null
     studentEmail: string | null
-    isHandicapped: string | null
-    handicapType: string | null
     enrolledBefore: string | null
     sponsor: string | null
     sponsorName: string | null
@@ -1184,8 +1180,6 @@ export namespace Prisma {
     woreda: number
     studentPhone: number
     studentEmail: number
-    isHandicapped: number
-    handicapType: number
     enrolledBefore: number
     sponsor: number
     sponsorName: number
@@ -1224,8 +1218,6 @@ export namespace Prisma {
     woreda?: true
     studentPhone?: true
     studentEmail?: true
-    isHandicapped?: true
-    handicapType?: true
     enrolledBefore?: true
     sponsor?: true
     sponsorName?: true
@@ -1262,8 +1254,6 @@ export namespace Prisma {
     woreda?: true
     studentPhone?: true
     studentEmail?: true
-    isHandicapped?: true
-    handicapType?: true
     enrolledBefore?: true
     sponsor?: true
     sponsorName?: true
@@ -1300,8 +1290,6 @@ export namespace Prisma {
     woreda?: true
     studentPhone?: true
     studentEmail?: true
-    isHandicapped?: true
-    handicapType?: true
     enrolledBefore?: true
     sponsor?: true
     sponsorName?: true
@@ -1411,8 +1399,6 @@ export namespace Prisma {
     woreda: string
     studentPhone: string
     studentEmail: string
-    isHandicapped: string
-    handicapType: string | null
     enrolledBefore: string
     sponsor: string | null
     sponsorName: string | null
@@ -1466,8 +1452,6 @@ export namespace Prisma {
     woreda?: boolean
     studentPhone?: boolean
     studentEmail?: boolean
-    isHandicapped?: boolean
-    handicapType?: boolean
     enrolledBefore?: boolean
     sponsor?: boolean
     sponsorName?: boolean
@@ -1506,8 +1490,6 @@ export namespace Prisma {
     woreda?: boolean
     studentPhone?: boolean
     studentEmail?: boolean
-    isHandicapped?: boolean
-    handicapType?: boolean
     enrolledBefore?: boolean
     sponsor?: boolean
     sponsorName?: boolean
@@ -1544,8 +1526,6 @@ export namespace Prisma {
     woreda?: boolean
     studentPhone?: boolean
     studentEmail?: boolean
-    isHandicapped?: boolean
-    handicapType?: boolean
     enrolledBefore?: boolean
     sponsor?: boolean
     sponsorName?: boolean
@@ -1582,8 +1562,6 @@ export namespace Prisma {
     woreda?: boolean
     studentPhone?: boolean
     studentEmail?: boolean
-    isHandicapped?: boolean
-    handicapType?: boolean
     enrolledBefore?: boolean
     sponsor?: boolean
     sponsorName?: boolean
@@ -1603,7 +1581,7 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type StudentApplicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "studentID" | "institute" | "department" | "admission" | "studyLevel" | "firstName" | "fatherName" | "gFatherName" | "sex" | "dob" | "region" | "zone" | "woreda" | "studentPhone" | "studentEmail" | "isHandicapped" | "handicapType" | "enrolledBefore" | "sponsor" | "sponsorName" | "sponsorRegion" | "sponsorZone" | "sponsorWoreda" | "sponsorEmail" | "sponsorURL" | "signed" | "studentPhotoUrl" | "diplomaUrl" | "highSchoolUrl" | "grade12Url" | "grade10Url" | "grade8Url" | "status" | "createdAt", ExtArgs["result"]["studentApplication"]>
+  export type StudentApplicationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "studentID" | "institute" | "department" | "admission" | "studyLevel" | "firstName" | "fatherName" | "gFatherName" | "sex" | "dob" | "region" | "zone" | "woreda" | "studentPhone" | "studentEmail" | "enrolledBefore" | "sponsor" | "sponsorName" | "sponsorRegion" | "sponsorZone" | "sponsorWoreda" | "sponsorEmail" | "sponsorURL" | "signed" | "studentPhotoUrl" | "diplomaUrl" | "highSchoolUrl" | "grade12Url" | "grade10Url" | "grade8Url" | "status" | "createdAt", ExtArgs["result"]["studentApplication"]>
   export type StudentApplicationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     postSecondary?: boolean | StudentApplication$postSecondaryArgs<ExtArgs>
     _count?: boolean | StudentApplicationCountOutputTypeDefaultArgs<ExtArgs>
@@ -1633,8 +1611,6 @@ export namespace Prisma {
       woreda: string
       studentPhone: string
       studentEmail: string
-      isHandicapped: string
-      handicapType: string | null
       enrolledBefore: string
       sponsor: string | null
       sponsorName: string | null
@@ -2092,8 +2068,6 @@ export namespace Prisma {
     readonly woreda: FieldRef<"StudentApplication", 'String'>
     readonly studentPhone: FieldRef<"StudentApplication", 'String'>
     readonly studentEmail: FieldRef<"StudentApplication", 'String'>
-    readonly isHandicapped: FieldRef<"StudentApplication", 'String'>
-    readonly handicapType: FieldRef<"StudentApplication", 'String'>
     readonly enrolledBefore: FieldRef<"StudentApplication", 'String'>
     readonly sponsor: FieldRef<"StudentApplication", 'String'>
     readonly sponsorName: FieldRef<"StudentApplication", 'String'>
@@ -3616,10 +3590,6 @@ export namespace Prisma {
     role: string | null
     email: string | null
     name: string | null
-    studentID: string | null
-    institute: string | null
-    department: string | null
-    academicYear: string | null
     createdAt: Date | null
   }
 
@@ -3630,10 +3600,6 @@ export namespace Prisma {
     role: string | null
     email: string | null
     name: string | null
-    studentID: string | null
-    institute: string | null
-    department: string | null
-    academicYear: string | null
     createdAt: Date | null
   }
 
@@ -3644,10 +3610,6 @@ export namespace Prisma {
     role: number
     email: number
     name: number
-    studentID: number
-    institute: number
-    department: number
-    academicYear: number
     createdAt: number
     _all: number
   }
@@ -3660,10 +3622,6 @@ export namespace Prisma {
     role?: true
     email?: true
     name?: true
-    studentID?: true
-    institute?: true
-    department?: true
-    academicYear?: true
     createdAt?: true
   }
 
@@ -3674,10 +3632,6 @@ export namespace Prisma {
     role?: true
     email?: true
     name?: true
-    studentID?: true
-    institute?: true
-    department?: true
-    academicYear?: true
     createdAt?: true
   }
 
@@ -3688,10 +3642,6 @@ export namespace Prisma {
     role?: true
     email?: true
     name?: true
-    studentID?: true
-    institute?: true
-    department?: true
-    academicYear?: true
     createdAt?: true
     _all?: true
   }
@@ -3775,10 +3725,6 @@ export namespace Prisma {
     role: string
     email: string
     name: string
-    studentID: string
-    institute: string
-    department: string
-    academicYear: string
     createdAt: Date
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
@@ -3806,10 +3752,6 @@ export namespace Prisma {
     role?: boolean
     email?: boolean
     name?: boolean
-    studentID?: boolean
-    institute?: boolean
-    department?: boolean
-    academicYear?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
 
@@ -3820,10 +3762,6 @@ export namespace Prisma {
     role?: boolean
     email?: boolean
     name?: boolean
-    studentID?: boolean
-    institute?: boolean
-    department?: boolean
-    academicYear?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
 
@@ -3834,10 +3772,6 @@ export namespace Prisma {
     role?: boolean
     email?: boolean
     name?: boolean
-    studentID?: boolean
-    institute?: boolean
-    department?: boolean
-    academicYear?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
 
@@ -3848,14 +3782,10 @@ export namespace Prisma {
     role?: boolean
     email?: boolean
     name?: boolean
-    studentID?: boolean
-    institute?: boolean
-    department?: boolean
-    academicYear?: boolean
     createdAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "password" | "role" | "email" | "name" | "studentID" | "institute" | "department" | "academicYear" | "createdAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "password" | "role" | "email" | "name" | "createdAt", ExtArgs["result"]["user"]>
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
@@ -3867,10 +3797,6 @@ export namespace Prisma {
       role: string
       email: string
       name: string
-      studentID: string
-      institute: string
-      department: string
-      academicYear: string
       createdAt: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -4301,10 +4227,6 @@ export namespace Prisma {
     readonly role: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
-    readonly studentID: FieldRef<"User", 'String'>
-    readonly institute: FieldRef<"User", 'String'>
-    readonly department: FieldRef<"User", 'String'>
-    readonly academicYear: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
   }
     
@@ -4703,8 +4625,6 @@ export namespace Prisma {
     woreda: 'woreda',
     studentPhone: 'studentPhone',
     studentEmail: 'studentEmail',
-    isHandicapped: 'isHandicapped',
-    handicapType: 'handicapType',
     enrolledBefore: 'enrolledBefore',
     sponsor: 'sponsor',
     sponsorName: 'sponsorName',
@@ -4745,10 +4665,6 @@ export namespace Prisma {
     role: 'role',
     email: 'email',
     name: 'name',
-    studentID: 'studentID',
-    institute: 'institute',
-    department: 'department',
-    academicYear: 'academicYear',
     createdAt: 'createdAt'
   };
 
@@ -4856,8 +4772,6 @@ export namespace Prisma {
     woreda?: StringFilter<"StudentApplication"> | string
     studentPhone?: StringFilter<"StudentApplication"> | string
     studentEmail?: StringFilter<"StudentApplication"> | string
-    isHandicapped?: StringFilter<"StudentApplication"> | string
-    handicapType?: StringNullableFilter<"StudentApplication"> | string | null
     enrolledBefore?: StringFilter<"StudentApplication"> | string
     sponsor?: StringNullableFilter<"StudentApplication"> | string | null
     sponsorName?: StringNullableFilter<"StudentApplication"> | string | null
@@ -4895,8 +4809,6 @@ export namespace Prisma {
     woreda?: SortOrder
     studentPhone?: SortOrder
     studentEmail?: SortOrder
-    isHandicapped?: SortOrder
-    handicapType?: SortOrderInput | SortOrder
     enrolledBefore?: SortOrder
     sponsor?: SortOrderInput | SortOrder
     sponsorName?: SortOrderInput | SortOrder
@@ -4937,8 +4849,6 @@ export namespace Prisma {
     woreda?: StringFilter<"StudentApplication"> | string
     studentPhone?: StringFilter<"StudentApplication"> | string
     studentEmail?: StringFilter<"StudentApplication"> | string
-    isHandicapped?: StringFilter<"StudentApplication"> | string
-    handicapType?: StringNullableFilter<"StudentApplication"> | string | null
     enrolledBefore?: StringFilter<"StudentApplication"> | string
     sponsor?: StringNullableFilter<"StudentApplication"> | string | null
     sponsorName?: StringNullableFilter<"StudentApplication"> | string | null
@@ -4976,8 +4886,6 @@ export namespace Prisma {
     woreda?: SortOrder
     studentPhone?: SortOrder
     studentEmail?: SortOrder
-    isHandicapped?: SortOrder
-    handicapType?: SortOrderInput | SortOrder
     enrolledBefore?: SortOrder
     sponsor?: SortOrderInput | SortOrder
     sponsorName?: SortOrderInput | SortOrder
@@ -5020,8 +4928,6 @@ export namespace Prisma {
     woreda?: StringWithAggregatesFilter<"StudentApplication"> | string
     studentPhone?: StringWithAggregatesFilter<"StudentApplication"> | string
     studentEmail?: StringWithAggregatesFilter<"StudentApplication"> | string
-    isHandicapped?: StringWithAggregatesFilter<"StudentApplication"> | string
-    handicapType?: StringNullableWithAggregatesFilter<"StudentApplication"> | string | null
     enrolledBefore?: StringWithAggregatesFilter<"StudentApplication"> | string
     sponsor?: StringNullableWithAggregatesFilter<"StudentApplication"> | string | null
     sponsorName?: StringNullableWithAggregatesFilter<"StudentApplication"> | string | null
@@ -5106,10 +5012,6 @@ export namespace Prisma {
     role?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
-    studentID?: StringFilter<"User"> | string
-    institute?: StringFilter<"User"> | string
-    department?: StringFilter<"User"> | string
-    academicYear?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
   }
 
@@ -5120,10 +5022,6 @@ export namespace Prisma {
     role?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    studentID?: SortOrder
-    institute?: SortOrder
-    department?: SortOrder
-    academicYear?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -5137,10 +5035,6 @@ export namespace Prisma {
     role?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     name?: StringFilter<"User"> | string
-    studentID?: StringFilter<"User"> | string
-    institute?: StringFilter<"User"> | string
-    department?: StringFilter<"User"> | string
-    academicYear?: StringFilter<"User"> | string
     createdAt?: DateTimeFilter<"User"> | Date | string
   }, "id" | "username">
 
@@ -5151,10 +5045,6 @@ export namespace Prisma {
     role?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    studentID?: SortOrder
-    institute?: SortOrder
-    department?: SortOrder
-    academicYear?: SortOrder
     createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -5171,10 +5061,6 @@ export namespace Prisma {
     role?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     name?: StringWithAggregatesFilter<"User"> | string
-    studentID?: StringWithAggregatesFilter<"User"> | string
-    institute?: StringWithAggregatesFilter<"User"> | string
-    department?: StringWithAggregatesFilter<"User"> | string
-    academicYear?: StringWithAggregatesFilter<"User"> | string
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
@@ -5195,8 +5081,6 @@ export namespace Prisma {
     woreda: string
     studentPhone: string
     studentEmail: string
-    isHandicapped: string
-    handicapType?: string | null
     enrolledBefore: string
     sponsor?: string | null
     sponsorName?: string | null
@@ -5234,8 +5118,6 @@ export namespace Prisma {
     woreda: string
     studentPhone: string
     studentEmail: string
-    isHandicapped: string
-    handicapType?: string | null
     enrolledBefore: string
     sponsor?: string | null
     sponsorName?: string | null
@@ -5273,8 +5155,6 @@ export namespace Prisma {
     woreda?: StringFieldUpdateOperationsInput | string
     studentPhone?: StringFieldUpdateOperationsInput | string
     studentEmail?: StringFieldUpdateOperationsInput | string
-    isHandicapped?: StringFieldUpdateOperationsInput | string
-    handicapType?: NullableStringFieldUpdateOperationsInput | string | null
     enrolledBefore?: StringFieldUpdateOperationsInput | string
     sponsor?: NullableStringFieldUpdateOperationsInput | string | null
     sponsorName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5312,8 +5192,6 @@ export namespace Prisma {
     woreda?: StringFieldUpdateOperationsInput | string
     studentPhone?: StringFieldUpdateOperationsInput | string
     studentEmail?: StringFieldUpdateOperationsInput | string
-    isHandicapped?: StringFieldUpdateOperationsInput | string
-    handicapType?: NullableStringFieldUpdateOperationsInput | string | null
     enrolledBefore?: StringFieldUpdateOperationsInput | string
     sponsor?: NullableStringFieldUpdateOperationsInput | string | null
     sponsorName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5351,8 +5229,6 @@ export namespace Prisma {
     woreda: string
     studentPhone: string
     studentEmail: string
-    isHandicapped: string
-    handicapType?: string | null
     enrolledBefore: string
     sponsor?: string | null
     sponsorName?: string | null
@@ -5389,8 +5265,6 @@ export namespace Prisma {
     woreda?: StringFieldUpdateOperationsInput | string
     studentPhone?: StringFieldUpdateOperationsInput | string
     studentEmail?: StringFieldUpdateOperationsInput | string
-    isHandicapped?: StringFieldUpdateOperationsInput | string
-    handicapType?: NullableStringFieldUpdateOperationsInput | string | null
     enrolledBefore?: StringFieldUpdateOperationsInput | string
     sponsor?: NullableStringFieldUpdateOperationsInput | string | null
     sponsorName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5427,8 +5301,6 @@ export namespace Prisma {
     woreda?: StringFieldUpdateOperationsInput | string
     studentPhone?: StringFieldUpdateOperationsInput | string
     studentEmail?: StringFieldUpdateOperationsInput | string
-    isHandicapped?: StringFieldUpdateOperationsInput | string
-    handicapType?: NullableStringFieldUpdateOperationsInput | string | null
     enrolledBefore?: StringFieldUpdateOperationsInput | string
     sponsor?: NullableStringFieldUpdateOperationsInput | string | null
     sponsorName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5510,10 +5382,6 @@ export namespace Prisma {
     role: string
     email: string
     name: string
-    studentID: string
-    institute: string
-    department: string
-    academicYear: string
     createdAt?: Date | string
   }
 
@@ -5524,10 +5392,6 @@ export namespace Prisma {
     role: string
     email: string
     name: string
-    studentID: string
-    institute: string
-    department: string
-    academicYear: string
     createdAt?: Date | string
   }
 
@@ -5538,10 +5402,6 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    studentID?: StringFieldUpdateOperationsInput | string
-    institute?: StringFieldUpdateOperationsInput | string
-    department?: StringFieldUpdateOperationsInput | string
-    academicYear?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5552,10 +5412,6 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    studentID?: StringFieldUpdateOperationsInput | string
-    institute?: StringFieldUpdateOperationsInput | string
-    department?: StringFieldUpdateOperationsInput | string
-    academicYear?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5566,10 +5422,6 @@ export namespace Prisma {
     role: string
     email: string
     name: string
-    studentID: string
-    institute: string
-    department: string
-    academicYear: string
     createdAt?: Date | string
   }
 
@@ -5580,10 +5432,6 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    studentID?: StringFieldUpdateOperationsInput | string
-    institute?: StringFieldUpdateOperationsInput | string
-    department?: StringFieldUpdateOperationsInput | string
-    academicYear?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5594,10 +5442,6 @@ export namespace Prisma {
     role?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
-    studentID?: StringFieldUpdateOperationsInput | string
-    institute?: StringFieldUpdateOperationsInput | string
-    department?: StringFieldUpdateOperationsInput | string
-    academicYear?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5690,8 +5534,6 @@ export namespace Prisma {
     woreda?: SortOrder
     studentPhone?: SortOrder
     studentEmail?: SortOrder
-    isHandicapped?: SortOrder
-    handicapType?: SortOrder
     enrolledBefore?: SortOrder
     sponsor?: SortOrder
     sponsorName?: SortOrder
@@ -5728,8 +5570,6 @@ export namespace Prisma {
     woreda?: SortOrder
     studentPhone?: SortOrder
     studentEmail?: SortOrder
-    isHandicapped?: SortOrder
-    handicapType?: SortOrder
     enrolledBefore?: SortOrder
     sponsor?: SortOrder
     sponsorName?: SortOrder
@@ -5766,8 +5606,6 @@ export namespace Prisma {
     woreda?: SortOrder
     studentPhone?: SortOrder
     studentEmail?: SortOrder
-    isHandicapped?: SortOrder
-    handicapType?: SortOrder
     enrolledBefore?: SortOrder
     sponsor?: SortOrder
     sponsorName?: SortOrder
@@ -5895,10 +5733,6 @@ export namespace Prisma {
     role?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    studentID?: SortOrder
-    institute?: SortOrder
-    department?: SortOrder
-    academicYear?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -5909,10 +5743,6 @@ export namespace Prisma {
     role?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    studentID?: SortOrder
-    institute?: SortOrder
-    department?: SortOrder
-    academicYear?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -5923,10 +5753,6 @@ export namespace Prisma {
     role?: SortOrder
     email?: SortOrder
     name?: SortOrder
-    studentID?: SortOrder
-    institute?: SortOrder
-    department?: SortOrder
-    academicYear?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -6221,8 +6047,6 @@ export namespace Prisma {
     woreda: string
     studentPhone: string
     studentEmail: string
-    isHandicapped: string
-    handicapType?: string | null
     enrolledBefore: string
     sponsor?: string | null
     sponsorName?: string | null
@@ -6259,8 +6083,6 @@ export namespace Prisma {
     woreda: string
     studentPhone: string
     studentEmail: string
-    isHandicapped: string
-    handicapType?: string | null
     enrolledBefore: string
     sponsor?: string | null
     sponsorName?: string | null
@@ -6313,8 +6135,6 @@ export namespace Prisma {
     woreda?: StringFieldUpdateOperationsInput | string
     studentPhone?: StringFieldUpdateOperationsInput | string
     studentEmail?: StringFieldUpdateOperationsInput | string
-    isHandicapped?: StringFieldUpdateOperationsInput | string
-    handicapType?: NullableStringFieldUpdateOperationsInput | string | null
     enrolledBefore?: StringFieldUpdateOperationsInput | string
     sponsor?: NullableStringFieldUpdateOperationsInput | string | null
     sponsorName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6351,8 +6171,6 @@ export namespace Prisma {
     woreda?: StringFieldUpdateOperationsInput | string
     studentPhone?: StringFieldUpdateOperationsInput | string
     studentEmail?: StringFieldUpdateOperationsInput | string
-    isHandicapped?: StringFieldUpdateOperationsInput | string
-    handicapType?: NullableStringFieldUpdateOperationsInput | string | null
     enrolledBefore?: StringFieldUpdateOperationsInput | string
     sponsor?: NullableStringFieldUpdateOperationsInput | string | null
     sponsorName?: NullableStringFieldUpdateOperationsInput | string | null

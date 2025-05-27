@@ -6,21 +6,19 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
+  // output   = "../lib/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
 model StudentApplication {
   id                  String   @id @default(uuid())
   studentID           String   @unique
   institute           String
   department          String
   admission           String
-  studyLevel          String
   firstName           String
   fatherName          String
   gFatherName         String
@@ -32,8 +30,6 @@ model StudentApplication {
   woreda              String
   studentPhone        String
   studentEmail        String
-  isHandicapped       String
-  handicapType        String?
 
   enrolledBefore      String
   postSecondary       PostSecondaryEducation[]
@@ -74,9 +70,5 @@ model User {
   role        String
   email       String
   name        String
-  studentID   String
-  institute   String
-  department  String
-  academicYear String
   createdAt   DateTime @default(now())
 }

@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error'],
-});
+const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -36,10 +34,6 @@ export async function POST(req: Request) {
         role: "student",
         email: studentData.studentEmail,
         name: `${studentData.firstName} ${studentData.fatherName}`,
-        studentID: studentData.studentID,
-        institute: studentData.institute,
-        department: studentData.department,
-        academicYear: academicYear,
       },
     });
 

@@ -78,7 +78,6 @@ export default function ApplicationFormPage() {
       : "",
     department: "",
     admission: "",
-    studyLevel: "",
     firstName: "",
     fatherName: "",
     gFatherName: "",
@@ -91,8 +90,6 @@ export default function ApplicationFormPage() {
     woreda: "",
     studentPhone: "",
     studentEmail: "",
-    isHandicapped: "No",
-    handicapType: "",
 
     // Step 3 - EDUCATIONAL INFORMATION
     enrolledBefore: "No", // "Yes" or "No"
@@ -115,14 +112,14 @@ export default function ApplicationFormPage() {
 
     // Step 5
     signed: false,
-    // studentPhoto: null,
-    // educationDocs: {
-    //   diploma: null,
-    //   highSchoolTranscript: null,
-    //   grade12th: null,
-    //   grade10th: null,
-    //   grade8th: null,
-    // },
+    studentPhoto: null,
+    educationDocs: {
+      diploma: null,
+      highSchoolTranscript: null,
+      grade12th: null,
+      grade10th: null,
+      grade8th: null,
+    },
     // Step 6
     status: "pending",
   });
@@ -327,18 +324,17 @@ export default function ApplicationFormPage() {
 
     const uniqueID = await generateStudentID(formData.admission);
 
-  await fetch("/api/submit-application/under-apply", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    ...formData,
-    password, // plain password
-    academicYear: EthioYYYY(),
-  }),
-});
-
+    await fetch("/api/submit-application/under-apply", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...formData,
+        password, // plain password
+        academicYear: EthioYYYY(),
+      }),
+    });
   };
 
   return (
@@ -411,48 +407,48 @@ export default function ApplicationFormPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Department */}
               <div>
-              <label className="block mb-2 text-gray-700 font-semibold">
-                Department / Field of Study{" "}
-                <span className="text-red-500">*</span>
-              </label>
-              {!selectedCollege ? (
-                <p className="text-red-500">
-                Invalid college selected. Please go back and try again.
-                </p>
-              ) : (
-                <>
-                <select
-                  className="w-full p-3 border border-blue-300 rounded mb-6"
-                  value={selectedProgram}
-                  onChange={(e) => {
-                  setSelectedProgram(e.target.value);
-                  setFormData((prev: any) => ({
-                    ...prev,
-                    department: e.target.value,
-                  }));
-                  setErrors((prev) => {
-                    const newErrors = { ...prev };
-                    delete newErrors.department;
-                    return newErrors;
-                  });
-                  }}
-                >
-                  <option value="" disabled>
-                  -- Choose a department --
-                  </option>
-                  {selectedCollege.programs.map((program, idx) => (
-                  <option key={idx} value={program.name}>
-                    {program.name}
-                  </option>
-                  ))}
-                </select>
-                {errors.department && (
-                  <p className="text-red-500 text-sm mt-1">
-                  {errors.department}
+                <label className="block mb-2 text-gray-700 font-semibold">
+                  Department / Field of Study{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                {!selectedCollege ? (
+                  <p className="text-red-500">
+                    Invalid college selected. Please go back and try again.
                   </p>
+                ) : (
+                  <>
+                    <select
+                      className="w-full p-3 border border-blue-300 rounded mb-6"
+                      value={selectedProgram}
+                      onChange={(e) => {
+                        setSelectedProgram(e.target.value);
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          department: e.target.value,
+                        }));
+                        setErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.department;
+                          return newErrors;
+                        });
+                      }}
+                    >
+                      <option value="" disabled>
+                        -- Choose a department --
+                      </option>
+                      {selectedCollege.programs.map((program, idx) => (
+                        <option key={idx} value={program.name}>
+                          {program.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.department && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.department}
+                      </p>
+                    )}
+                  </>
                 )}
-                </>
-              )}
               </div>
               <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
@@ -482,24 +478,25 @@ export default function ApplicationFormPage() {
                     {errors.admission}
                   </p>
                 )}
-                </div>
+              </div>
 
-                <div>
-  <label className="block mb-2 text-gray-700 font-semibold">
-    Student ID <span className="text-red-500">*</span>
-  </label>
-  <input
-    name="studentID"
-    value={formData.studentID}
-    onChange={handleChange}
-    placeholder="e.g., R/0001/17"
-    className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-  />
-  {errors.studentID && (
-    <p className="text-red-500 text-sm mt-1">{errors.studentID}</p>
-  )}
-</div>
-
+              <div>
+                <label className="block mb-2 text-gray-700 font-semibold">
+                  Student ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  name="studentID"
+                  value={formData.studentID}
+                  onChange={handleChange}
+                  placeholder="e.g., R/0001/17"
+                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                />
+                {errors.studentID && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.studentID}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Personal Information */}
@@ -851,92 +848,92 @@ export default function ApplicationFormPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Sponsor */}
               <div>
-              <label className="block mb-2 text-gray-700 font-semibold">
-                Sponsor
-              </label>
-              <select
-                name="sponsor"
-                value={formData.sponsor}
-                onChange={handleChange}
-                className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-              >
-                <option value="">Select Sponsor</option>
-                <option value="MOE">MOE</option>
-                <option value="Self">Self</option>
-                <option value="Other">Other</option>
-              </select>
+                <label className="block mb-2 text-gray-700 font-semibold">
+                  Sponsor
+                </label>
+                <select
+                  name="sponsor"
+                  value={formData.sponsor}
+                  onChange={handleChange}
+                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                >
+                  <option value="">Select Sponsor</option>
+                  <option value="MOE">MOE</option>
+                  <option value="Self">Self</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
               {/* Show sponsor fields only if not Self and not empty */}
               {formData.sponsor && formData.sponsor !== "Self" && (
-              <>
-                {/* Sponsor Name (only if Other) */}
-                {formData.sponsor === "Other" && (
-                <div>
-                  <label className="block mb-2 text-gray-700 font-semibold">
-                  Organization Name
-                  </label>
-                  <input
-                  name="sponsorName"
-                  placeholder="Organization Name"
-                  onChange={handleChange}
-                  value={formData.sponsorName}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                  />
-                </div>
-                )}
-                {/* Sponsor Region */}
-                <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Sponsor Region
-                </label>
-                <input
-                  name="sponsorRegion"
-                  placeholder="Sponsor Region"
-                  onChange={handleChange}
-                  value={formData.sponsorRegion}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                </div>
-                {/* Sponsor Zone */}
-                <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Sponsor Zone
-                </label>
-                <input
-                  name="sponsorZone"
-                  placeholder="Sponsor Zone"
-                  onChange={handleChange}
-                  value={formData.sponsorZone}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                </div>
-                {/* Sponsor Email */}
-                <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Sponsor Email
-                </label>
-                <input
-                  name="sponsorEmail"
-                  placeholder="Sponsor Email"
-                  onChange={handleChange}
-                  value={formData.sponsorEmail}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                </div>
-                {/* Sponsor URL */}
-                <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Sponsor Website (URL)
-                </label>
-                <input
-                  name="sponsorURL"
-                  placeholder="Sponsor Website"
-                  onChange={handleChange}
-                  value={formData.sponsorURL}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                </div>
-              </>
+                <>
+                  {/* Sponsor Name (only if Other) */}
+                  {formData.sponsor === "Other" && (
+                    <div>
+                      <label className="block mb-2 text-gray-700 font-semibold">
+                        Organization Name
+                      </label>
+                      <input
+                        name="sponsorName"
+                        placeholder="Organization Name"
+                        onChange={handleChange}
+                        value={formData.sponsorName}
+                        className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                      />
+                    </div>
+                  )}
+                  {/* Sponsor Region */}
+                  <div>
+                    <label className="block mb-2 text-gray-700 font-semibold">
+                      Sponsor Region
+                    </label>
+                    <input
+                      name="sponsorRegion"
+                      placeholder="Sponsor Region"
+                      onChange={handleChange}
+                      value={formData.sponsorRegion}
+                      className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                    />
+                  </div>
+                  {/* Sponsor Zone */}
+                  <div>
+                    <label className="block mb-2 text-gray-700 font-semibold">
+                      Sponsor Zone
+                    </label>
+                    <input
+                      name="sponsorZone"
+                      placeholder="Sponsor Zone"
+                      onChange={handleChange}
+                      value={formData.sponsorZone}
+                      className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                    />
+                  </div>
+                  {/* Sponsor Email */}
+                  <div>
+                    <label className="block mb-2 text-gray-700 font-semibold">
+                      Sponsor Email
+                    </label>
+                    <input
+                      name="sponsorEmail"
+                      placeholder="Sponsor Email"
+                      onChange={handleChange}
+                      value={formData.sponsorEmail}
+                      className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                    />
+                  </div>
+                  {/* Sponsor URL */}
+                  <div>
+                    <label className="block mb-2 text-gray-700 font-semibold">
+                      Sponsor Website (URL)
+                    </label>
+                    <input
+                      name="sponsorURL"
+                      placeholder="Sponsor Website"
+                      onChange={handleChange}
+                      value={formData.sponsorURL}
+                      className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                    />
+                  </div>
+                </>
               )}
             </div>
           </>
@@ -1039,7 +1036,8 @@ export default function ApplicationFormPage() {
                         Selected: {formData.educationDocs.diploma.name}
                       </span>
                     )}
-                  </div> <div>
+                  </div>{" "}
+                  <div>
                     <label className="block text-gray-600 text-sm mb-1">
                       12th Grade Certificate
                     </label>
@@ -1097,9 +1095,7 @@ export default function ApplicationFormPage() {
                         {formData.educationDocs.highSchoolTranscript.name}
                       </span>
                     )}
-                   
                   </div>
-              
                   <div>
                     <label className="block text-gray-600 text-sm mb-1">
                       10th Grade Certificate
@@ -1135,7 +1131,6 @@ export default function ApplicationFormPage() {
                       </p>
                     )}
                   </div>
-
                   <div>
                     <label className="block text-gray-600 text-sm mb-1">
                       8th Grade Certificate
@@ -1170,7 +1165,7 @@ export default function ApplicationFormPage() {
                         {errors.grade8result}
                       </p>
                     )}
-                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1208,7 +1203,7 @@ export default function ApplicationFormPage() {
             Back
           </button>
 
-          {step ===  1 ? (
+          {step === 1 ? (
             <button
               type="button"
               onClick={() => {
