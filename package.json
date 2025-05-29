@@ -19,6 +19,8 @@
     "bcryptjs": "^3.0.2",
     "firebase": "^11.7.3",
     "firebase-admin": "^13.4.0",
+    "formidable": "^3.5.4",
+    "minio": "^8.0.5",
     "next": "15.3.2",
     "next-auth": "^4.24.11",
     "nodemailer": "^6.10.1",

@@ -311,28 +311,36 @@ export default function ApplicationFormPage() {
   };
 
   //   Submit the form
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const form = new FormData();
+    form.append("studentPhoto", formData.studentPhoto);
+    Object.entries(formData.educationDocs).forEach(([key, file]) => {
+      if (file) form.append(key, file);
+    });
+
+    const uploadRes = await fetch("/api/upload", {
+      method: "POST",
+      body: form,
+    });
+
+    const { uploaded } = await uploadRes.json();
+    console.log(uploaded)
 
     const password = generatePassword();
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (!formData.admission) {
-      alert("Admission type is required to generate Student ID.");
-      return;
-    }
-
-    const uniqueID = await generateStudentID(formData.admission);
+    const studentID = await generateStudentID(formData.admission);
 
     await fetch("/api/submit-application/under-apply", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...formData,
-        password, // plain password
-        academicYear: EthioYYYY(),
+        studentID,
+        password,
+        uploadedFiles: uploaded,
       }),
     });
   };

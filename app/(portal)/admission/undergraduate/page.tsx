@@ -17,6 +17,14 @@ const colleges = [
     ],
   },
   {
+    name: "Institute of Health Science ",
+    programs: [
+      { name: "Public Health", year: "5" },
+      { name: "Nursing", year: "5" },
+      { name: "Medical Lab", year: "5" },
+    ],
+  },
+  {
     name: "College of Natural Sciences",
     programs: [
       { name: "Biology", year: "4" },
