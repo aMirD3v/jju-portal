@@ -1,56 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaChevronDown, FaChevronUp, FaUniversity } from "react-icons/fa";
 
 const APPLICATION_START = new Date("2025-04-01T00:00:00Z");
 const APPLICATION_DEADLINE = new Date("2025-05-30T23:59:59Z");
-
-const colleges = [
-  {
-    name: "College of Engineering",
-    programs: [
-      { name: "Civil Engineering", year: "5" },
-      { name: "Mechanical Engineering", year: "5" },
-      { name: "Electrical Engineering", year: "5" },
-    ],
-  },
-  {
-    name: "Institute of Health Science ",
-    programs: [
-      { name: "Public Health", year: "5" },
-      { name: "Nursing", year: "5" },
-      { name: "Medical Lab", year: "5" },
-    ],
-  },
-  {
-    name: "College of Natural Sciences",
-    programs: [
-      { name: "Biology", year: "4" },
-      { name: "Chemistry", year: "4" },
-      { name: "Physics", year: "4" },
-      { name: "Mathematics", year: "4" },
-    ],
-  },
-  {
-    name: "College of Business and Economics",
-    programs: [
-      { name: "Accounting", year: "4" },
-      { name: "Economics", year: "4" },
-      { name: "Management", year: "5" },
-      { name: "Marketing", year: "4" },
-    ],
-  },
-  {
-    name: "College of Social Sciences",
-    programs: [
-      { name: "Sociology", year: "4" },
-      { name: "Political Science", year: "5" },
-      { name: "Psychology", year: "5" },
-    ],
-  },
-];
 
 function StatusBanner({
   applicationStarted,
@@ -95,6 +50,7 @@ function StatusBanner({
 
 function CollegeCard({
   college,
+  programs,
   expanded,
   toggleExpand,
   handleApply,
@@ -139,7 +95,7 @@ function CollegeCard({
               Departments & Programs
             </h3>
             <ul className="space-y-3 mb-7">
-              {college.programs.map((program: any, i: number) => (
+              {programs.map((program: any, i: number) => (
                 <li
                   key={i}
                   className="flex items-center gap-3 text-blue-900 bg-blue-50 rounded-lg px-4 py-2 shadow-sm"
@@ -170,9 +126,19 @@ function CollegeCard({
 export default function UndergraduatePage() {
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [colleges, setColleges] = useState<any[]>([]);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
+    async function fetchAvailable() {
+      const res = await fetch("/api/admission/available");
+      const json = await res.json();
+      const filtered = json.filter((entry: any) => entry.programs.length > 0);
+      setColleges(filtered);
+    }
+
+    fetchAvailable();
+
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
@@ -212,10 +178,11 @@ export default function UndergraduatePage() {
         />
         {applicationStarted && !applicationEnded && (
           <div className="flex flex-col gap-6">
-            {colleges.map((college, idx) => (
+            {colleges.map((entry, idx) => (
               <CollegeCard
                 key={idx}
-                college={college}
+                college={entry.college}
+                programs={entry.programs}
                 expanded={expanded}
                 toggleExpand={toggleExpand}
                 handleApply={handleApply}

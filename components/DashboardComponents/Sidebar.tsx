@@ -39,18 +39,25 @@ export default function DashboardSidebar() {
                 Manage Applications
               </span>
             </Link>
+            <Link href="/dashboard/admin/admission">
+              <span className={linkClass("/dashboard/admin/admission")}>
+                Manage Admission
+              </span>
+            </Link>
             <Link href="/dashboard/admin/users">
               <span className={linkClass("/dashboard/admin/users")}>
                 Manage Users
               </span>
             </Link>
-          </>
+          </> 
         )}
 
         {role === "staff" && (
           <>
             <Link href="/dashboard/staff">
-              <span className={linkClass("/dashboard/staff")}>Staff Dashboard</span>
+              <span className={linkClass("/dashboard/staff")}>
+                Staff Dashboard
+              </span>
             </Link>
             {/* More staff links */}
           </>
@@ -59,7 +66,9 @@ export default function DashboardSidebar() {
         {role === "student" && (
           <>
             <Link href="/dashboard/student">
-              <span className={linkClass("/dashboard/student")}>My Admission</span>
+              <span className={linkClass("/dashboard/student")}>
+                My Admission
+              </span>
             </Link>
             {/* More student links */}
           </>

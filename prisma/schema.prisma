@@ -72,3 +72,44 @@ model User {
   name        String
   createdAt   DateTime @default(now())
 }
+
+
+model College {
+  id               Int               @id @default(autoincrement())
+  name             String
+  programs         Program[]
+  availableCollege AvailableCollege[]
+}
+
+model Program {
+  id                Int                @id @default(autoincrement())
+  name              String
+  year              Int
+  college           College            @relation(fields: [collegeId], references: [id])
+  collegeId         Int
+  availablePrograms AvailableProgram[]
+}
+
+model AdmissionConfig {
+  id                  Int      @id @default(autoincrement())
+  applicationStart    DateTime
+  applicationDeadline DateTime
+  createdAt           DateTime @default(now())
+}
+
+model AvailableCollege {
+  id                Int               @id @default(autoincrement())
+  college           College           @relation(fields: [collegeId], references: [id])
+  collegeId         Int
+  programs          AvailableProgram[]
+}
+
+model AvailableProgram {
+  id                 Int               @id @default(autoincrement())
+  program            Program           @relation(fields: [programId], references: [id])
+  programId          Int
+  availableCollege   AvailableCollege  @relation(fields: [availableCollegeId], references: [id])
+  availableCollegeId Int
+
+  @@unique([programId, availableCollegeId])
+}
