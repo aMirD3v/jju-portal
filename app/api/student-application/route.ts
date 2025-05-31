@@ -11,16 +11,40 @@ export async function GET(req: Request) {
   }
 
   try {
-    const studentID = session.user.username; // Same as the username in NextAuth
-    const application = await prisma.studentApplication.findUnique({
+    const studentID = session.user.username;
+
+    // First, check undergraduate application
+    const undergradApplication = await prisma.studentApplication.findUnique({
       where: { studentID },
+      include: {
+        postSecondary: true,
+      },
     });
 
-    if (!application) {
-      return NextResponse.json({ application: null });
+    // Then, check postgraduate application
+    const postgradApplication = await prisma.studentApplicationPostGraduate.findUnique({
+      where: { studentID },
+      include: {
+        postSecondary: true,
+      },
+    });
+
+    // Determine which application exists
+    let applicationType = null;
+    let applicationData = null;
+
+    if (undergradApplication) {
+      applicationType = "undergraduate";
+      applicationData = undergradApplication;
+    } else if (postgradApplication) {
+      applicationType = "postgraduate";
+      applicationData = postgradApplication;
     }
 
-    return NextResponse.json({ application });
+    return NextResponse.json({
+      applicationType,
+      application: applicationData,
+    });
   } catch (error) {
     console.error("Error fetching application:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

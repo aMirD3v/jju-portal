@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
 
 const prisma = new PrismaClient();
 
@@ -29,7 +30,7 @@ const getEthiopianYear = (): number => {
 // Helper: Generate the new Student ID
 const generateStudentID = async (): Promise<string> => {
   const yearSuffix = getEthiopianYearSuffix();
-  const idPrefix = `JJU${yearSuffix}AD`;
+  const idPrefix = `JJU${yearSuffix}AD-UG`;
 
   const existingStudents = await prisma.studentApplication.findMany({
     where: {
@@ -110,6 +111,33 @@ export async function POST(req: Request) {
         name: `${student.firstName} ${student.fatherName}`,
       },
     });
+
+         // 📧 Send email with credentials
+        const transporter = nodemailer.createTransport({
+          service: "Gmail",
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+          },
+        });
+    
+        const mailOptions = {
+          from: `"Admissions Office" <${process.env.EMAIL_USER}>`,
+          to: student.studentEmail,
+          subject: "Your Admission Portal Credentials",
+          text: `Hello ${student.firstName},
+    
+    Your student account has been created.
+    
+    Username: ${studentID}
+    Password: ${password}
+    
+    Please use the username and password to login to the portal
+    
+    Thanks!`,
+        };
+    
+        await transporter.sendMail(mailOptions);
 
     return NextResponse.json({ success: true, studentID });
   } catch (error) {

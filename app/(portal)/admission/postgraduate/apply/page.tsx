@@ -266,7 +266,7 @@ export default function ApplicationFormPage() {
 
       // Generate password
       const password = generatePassword();
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // const hashedPassword = await bcrypt.hash(password, 10);
 
       // Send all form data (no studentID generation here)
       await fetch("/api/submit-application/post-apply", {
@@ -274,7 +274,7 @@ export default function ApplicationFormPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          password: hashedPassword,
+          password,
           uploadedFiles: uploaded,
         }),
       });

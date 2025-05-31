@@ -27,6 +27,11 @@ export default function SuccessPage() {
           and <strong>password</strong> that you can use to log in and check
           your admission status.
         </p>
+        {/* add some style like add some icons that tells trash or spam */}
+        <p className="text-gray-600 mb-4">
+          If you don't receive the email within a few minutes, please check your
+          <strong> spam</strong> or <strong> trash</strong> folder.
+        </p>
         <p className="text-gray-600">
           If you have any questions, feel free to contact the admissions office.
         </p>
