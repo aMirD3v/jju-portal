@@ -13,11 +13,28 @@ export async function GET() {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  // Get the student's application
   const studentID = session.user.username;
-  const app = await prisma.studentApplication.findUnique({
+
+  // Check undergraduate application first
+  const undergradApplication = await prisma.studentApplication.findUnique({
     where: { studentID },
   });
+
+  // Then check postgraduate application
+  const postgradApplication = await prisma.studentApplicationPostGraduate.findUnique({
+    where: { studentID },
+  });
+
+  let applicationType = null;
+  let app = null;
+
+  if (undergradApplication) {
+    applicationType = "undergraduate";
+    app = undergradApplication;
+  } else if (postgradApplication) {
+    applicationType = "postgraduate";
+    app = postgradApplication;
+  }
 
   if (!app) {
     return NextResponse.json(
@@ -45,10 +62,33 @@ export async function GET() {
   ctx.drawImage(template, 0, 0);
 
   // Draw student photo (if available)
-  if (app.studentPhotoUrl) {
-    const photo = await loadImage(app.studentPhotoUrl);
-    ctx.drawImage(photo, 795, 200, 240, 300); // adjust position and size
+if (app.studentPhotoUrl) {
+  const photo = await loadImage(app.studentPhotoUrl);
+
+  // Desired max dimensions
+  const maxWidth = 250;
+  const maxHeight = 300;
+
+  // Calculate the aspect ratio
+  const aspectRatio = photo.width / photo.height;
+
+  let drawWidth = maxWidth;
+  let drawHeight = maxHeight;
+
+  if (aspectRatio > (maxWidth / maxHeight)) {
+    // Photo is wider
+    drawHeight = maxWidth / aspectRatio;
+  } else {
+    // Photo is taller
+    drawWidth = maxHeight * aspectRatio;
   }
+
+  // Center the image in the box
+  const offsetX = 790 + (maxWidth - drawWidth) / 2;
+  const offsetY = 202 + (maxHeight - drawHeight) / 2;
+
+  ctx.drawImage(photo, offsetX, offsetY, drawWidth, drawHeight);
+}
 
   // Draw student details
   ctx.font = "28px bold 'Times New Roman'";
@@ -59,13 +99,13 @@ export async function GET() {
     180,
     280
   );
-  ctx.fillText(` ${app.studentID}`, 180, 325,);
+  ctx.fillText(` ${app.studentID}`, 180, 325);
   ctx.fillText(` ${app.institute}`, 190, 375);
   ctx.fillText(` ${app.department}`, 200, 425);
   ctx.fillText(` ${app.admission}`, 200, 470);
 
   // Draw the stamp
-  ctx.drawImage(stamp, canvas.width - 520, canvas.height - 360, 320, 300);
+  ctx.drawImage(stamp, canvas.width - 540, canvas.height - 370, 320, 300);
 
   // Return as PNG
   const buffer = canvas.toBuffer("image/png");
@@ -74,6 +114,7 @@ export async function GET() {
     status: 200,
     headers: {
       "Content-Type": "image/png",
+      "X-Application-Type": applicationType,
     },
   });
 }

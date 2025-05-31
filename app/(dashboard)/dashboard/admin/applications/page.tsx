@@ -641,6 +641,24 @@ export default function ApplicationsPage() {
             </section>
 
             <div className="mt-6 text-right">
+              
+              
+                {/* <button
+                  onClick={() => updateStatus(selectedApp, "approved")}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => {
+                    setRejectionApp(selectedApp);
+                    setShowRejectionModal(true);
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Reject
+                </button> */}
+
               <button
                 onClick={() => setSelectedApp(null)}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"

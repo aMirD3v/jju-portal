@@ -272,7 +272,7 @@ export default function ApplicationFormPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          password: hashedPassword,
+          password,
           uploadedFiles: uploaded,
         }),
       });
