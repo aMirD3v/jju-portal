@@ -22,60 +22,15 @@ export default function ApplicationFormPage() {
     "Declaration",
   ];
 
-  const colleges = [
-    {
-      name: "College of Engineering",
-      programs: [
-        { name: "Civil Engineering", year: "5" },
-        { name: "Mechanical Engineering", year: "5" },
-        { name: "Electrical Engineering", year: "5" },
-      ],
-    },
-    {
-      name: "College of Natural Sciences",
-      programs: [
-        { name: "Biology", year: "4" },
-        { name: "Chemistry", year: "4" },
-        { name: "Physics", year: "4" },
-        { name: "Mathematics", year: "4" },
-      ],
-    },
-    {
-      name: "College of Business and Economics",
-      programs: [
-        { name: "Accounting", year: "4" },
-        { name: "Economics", year: "4" },
-        { name: "Management", year: "5" },
-        { name: "Marketing", year: "4" },
-      ],
-    },
-    {
-      name: "College of Social Sciences",
-      programs: [
-        { name: "Sociology", year: "4" },
-        { name: "Political Science", year: "5" },
-        { name: "Psychology", year: "5" },
-      ],
-    },
-  ];
-
   const searchParams = useSearchParams();
-  const selectedCollegeName = searchParams.get("college");
+  const selectedCollegeId = searchParams.get("collegeId");
+  const [college, setCollege] = useState<any>(null); // The college object
   const [selectedProgram, setSelectedProgram] = useState("");
-
-  const selectedCollege = colleges.find((c) => c.name === selectedCollegeName);
-
-  useEffect(() => {
-    // Reset selected program when college changes
-    setSelectedProgram("");
-  }, [selectedCollegeName]);
 
   const [formData, setFormData] = useState<any>({
     // Step 1
     studentID: "",
-    institute: colleges.find((c) => c.name === selectedCollegeName)
-      ? selectedCollegeName
-      : "",
+    institute: "",
     department: "",
     admission: "",
     firstName: "",
@@ -123,6 +78,60 @@ export default function ApplicationFormPage() {
     // Step 6
     status: "pending",
   });
+
+  // Effect to fetch the college data and update the form state
+  useEffect(() => {
+    if (!selectedCollegeId) {
+      console.error("No college ID found in the URL");
+      return;
+    }
+
+    // Fetch college data by ID
+    async function fetchCollegeData() {
+      try {
+        const res = await fetch(`/api/admission/undergraduate/colleges/${selectedCollegeId}`);
+        if (!res.ok) {
+          console.error("Failed to fetch college data:", res.statusText);
+          return;
+        }
+        const collegeData = await res.json();
+
+        // Update the college data and set it in state
+        setCollege(collegeData);
+
+        // Set the college name in the formData (institute)
+        setFormData((prev: any) => ({
+          ...prev,
+          institute: collegeData.name, // Save the college name here
+        }));
+      } catch (error) {
+        console.error("Error fetching college data:", error);
+      }
+    }
+
+    fetchCollegeData();
+  }, [selectedCollegeId]); // Run when selectedCollegeId changes
+
+  // Effect to handle department change and update form data
+  useEffect(() => {
+    // Reset the selected program when college changes (to ensure fresh start)
+    if (college) {
+      setSelectedProgram("");
+      setFormData((prev: any) => ({
+        ...prev,
+        department: "", // Reset department when college changes
+      }));
+    }
+  }, [college]); // Runs whenever `college` changes
+
+  const handleProgramChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedDepartment = e.target.value;
+    setSelectedProgram(selectedDepartment);
+    setFormData((prev) => ({
+      ...prev,
+      department: selectedDepartment,
+    }));
+  };
 
   // Validation functions
 
@@ -174,68 +183,19 @@ export default function ApplicationFormPage() {
   const validateStep1 = () => {
     const newErrors: { [key: string]: string } = {};
     // Declaration
-    // if (!formData.signed) newErrors.signed = "Signature is required.";
+    if (!formData.signed) newErrors.signed = "Signature is required.";
+
     // // Uploaded files
-    // if (!formData.studentPhoto)
-    //   newErrors.studentPhoto = "Student photo is required.";
-    // if (!formData.educationDocs.degree)
-    //   newErrors.degree = "Degree document is required.";
-    // if (!formData.educationDocs.highSchoolTranscript)
-    //   newErrors.highSchoolTranscript = "High school transcript is required.";
-    // if (!formData.educationDocs.grade12result)
-    //   newErrors.grade12result = "Grade 12th is required.";
+    if (!formData.studentPhoto)
+      newErrors.studentPhoto = "Student photo is required.";
+
+    // if (!formData.grade10th)
+    //   newErrors.grade10th = "Student photo is required.";
+    // if (!formData.grade8th)
+    //   newErrors.grade8th = "Student photo is required.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  //   Generate Ethiopian Year Suffix
-  const getEthiopianYearSuffix = (): string => {
-    const date = new Date();
-    const gYear = date.getFullYear();
-    const gMonth = date.getMonth() + 1;
-    const ethYear =
-      gMonth < 9 || (gMonth === 9 && date.getDate() < 11)
-        ? gYear - 8
-        : gYear - 7;
-    return String(ethYear).slice(-2);
-  };
-
-  // Generate Student ID
-  const generateStudentID = async (admissionType: string): Promise<string> => {
-    const prefixMap: Record<string, string> = {
-      "Regular – Full Time": "R",
-      "Extension – Weekend": "WJ",
-      "Extension – Night": "EV",
-      Distance: "D",
-      Summer: "S",
-    };
-
-    const prefix = prefixMap[admissionType] || "X";
-    const yearSuffix = getEthiopianYearSuffix();
-
-    // Fetch all existing students whose IDs start with this prefix and yearSuffix
-    const studentsRef = ref(rtdb, `students`);
-    const snapshot = await get(studentsRef);
-
-    // Find all student IDs matching the pattern (e.g., R_XXXX_17)
-    let nextNumber = 1;
-    if (snapshot.exists()) {
-      const students = snapshot.val() || {};
-      const regex = new RegExp(`^${prefix}_(\\d{4})_${yearSuffix}$`);
-      const matchingIDs = Object.keys(students)
-        .map((id) => {
-          const match = id.match(regex);
-          return match ? parseInt(match[1], 10) : null;
-        })
-        .filter((n) => n !== null) as number[];
-      if (matchingIDs.length > 0) {
-        nextNumber = Math.max(...matchingIDs) + 1;
-      }
-    }
-
-    const paddedID = String(nextNumber).padStart(4, "0");
-    return `${prefix}/${paddedID}/${yearSuffix}`;
   };
 
   // Generate Password
@@ -253,13 +213,7 @@ export default function ApplicationFormPage() {
     >
   ) => {
     const { name, value, type, checked, files } = e.target;
-    if (name === "institute") {
-      setSelectedInstitute(value);
-      setFormData((prev) => ({
-        ...prev,
-        department: "", // reset department on institute change
-      }));
-    }
+
     // Remove error as user types
     setErrors((prev) => {
       const newErrors = { ...prev };
@@ -273,15 +227,6 @@ export default function ApplicationFormPage() {
       setFormData((prev) => ({ ...prev, [name]: files?.[0] || null }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-
-    if (name === "admission") {
-      const studentID = generateStudentID(value);
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-        studentID,
-      }));
     }
   };
 
@@ -297,52 +242,47 @@ export default function ApplicationFormPage() {
 
   const back = () => setStep((prev) => Math.max(prev - 1, 0));
 
-  // Generate Ethiopian Year for the Academic Year
-  // This function calculates the Ethiopian year based on the current date.
-  const EthioYYYY = (): string => {
-    const date = new Date();
-    const gYear = date.getFullYear();
-    const gMonth = date.getMonth() + 1;
-    const ethYear =
-      gMonth < 9 || (gMonth === 9 && date.getDate() < 11)
-        ? gYear - 8
-        : gYear - 7;
-    return String(ethYear);
-  };
-
   //   Submit the form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const form = new FormData();
-    form.append("studentPhoto", formData.studentPhoto);
-    Object.entries(formData.educationDocs).forEach(([key, file]) => {
-      if (file) form.append(key, file);
-    });
+    setIsSubmitting(true);
 
-    const uploadRes = await fetch("/api/upload", {
-      method: "POST",
-      body: form,
-    });
+    try {
+      // Upload files
+      const form = new FormData();
+      form.append("studentPhoto", formData.studentPhoto);
+      Object.entries(formData.educationDocs).forEach(([key, file]) => {
+        if (file) form.append(key, file);
+      });
 
-    const { uploaded } = await uploadRes.json();
-    console.log(uploaded)
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: form,
+      });
+      const { uploaded } = await uploadRes.json();
 
-    const password = generatePassword();
-    const hashedPassword = await bcrypt.hash(password, 10);
+      // Generate password
+      const password = generatePassword();
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    const studentID = await generateStudentID(formData.admission);
+      // Send all form data (no studentID generation here)
+      await fetch("/api/submit-application/under-apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          password: hashedPassword,
+          uploadedFiles: uploaded,
+        }),
+      });
 
-    await fetch("/api/submit-application/under-apply", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...formData,
-        studentID,
-        password,
-        uploadedFiles: uploaded,
-      }),
-    });
+      router.push("/admission/success");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -350,6 +290,38 @@ export default function ApplicationFormPage() {
       <h2 className="text-2xl font-bold text-blue-600 mb-6 text-center ">
         Student Application Form
       </h2>
+
+ {/* Submit Loading */}
+
+      {isSubmitting && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg flex items-center gap-2 shadow">
+            <svg
+              className="animate-spin h-6 w-6 text-blue-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+            <span className="text-blue-600 font-medium">
+              Submitting your application, please wait...
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Modal */}
 
@@ -419,45 +391,35 @@ export default function ApplicationFormPage() {
                   Department / Field of Study{" "}
                   <span className="text-red-500">*</span>
                 </label>
-                {!selectedCollege ? (
-                  <p className="text-red-500">
-                    Invalid college selected. Please go back and try again.
+                {!college ? (
+                  <p className="text-blue-500">
+                    Loading Available Department...
                   </p>
                 ) : (
                   <>
                     <select
                       className="w-full p-3 border border-blue-300 rounded mb-6"
                       value={selectedProgram}
-                      onChange={(e) => {
-                        setSelectedProgram(e.target.value);
-                        setFormData((prev: any) => ({
-                          ...prev,
-                          department: e.target.value,
-                        }));
-                        setErrors((prev) => {
-                          const newErrors = { ...prev };
-                          delete newErrors.department;
-                          return newErrors;
-                        });
-                      }}
+                      onChange={handleProgramChange}
                     >
                       <option value="" disabled>
                         -- Choose a department --
                       </option>
-                      {selectedCollege.programs.map((program, idx) => (
+                      {college.programs.map((program: any, idx: number) => (
                         <option key={idx} value={program.name}>
                           {program.name}
                         </option>
                       ))}
                     </select>
-                    {errors.department && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.department}
+                    {selectedProgram && (
+                      <p className="text-blue-500">
+                        Selected Program: {selectedProgram}
                       </p>
                     )}
                   </>
                 )}
               </div>
+
               <div>
                 <label className="block mb-2 text-gray-700 font-semibold">
                   Admission Type <span className="text-red-500">*</span>
@@ -471,14 +433,10 @@ export default function ApplicationFormPage() {
                   <option value="" className="text-blue-200">
                     Select Admission Type
                   </option>
-                  <option value="Regular – Full Time">
-                    Regular – Full Time
-                  </option>
+                  <option value="Extension – Night">Extension – Night</option>
                   <option value="Extension – Weekend">
                     Extension – Weekend
                   </option>
-                  <option value="Extension – Night">Extension – Night</option>
-                  <option value="Distance">Distance</option>
                   <option value="Summer">Summer</option>
                 </select>
                 {errors.admission && (
@@ -487,27 +445,10 @@ export default function ApplicationFormPage() {
                   </p>
                 )}
               </div>
-
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Student ID <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="studentID"
-                  value={formData.studentID}
-                  onChange={handleChange}
-                  placeholder="e.g., R/0001/17"
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-                {errors.studentID && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.studentID}
-                  </p>
-                )}
-              </div>
             </div>
 
             {/* Personal Information */}
+
             <h2 className=" font-bold text-blue-600 mb-6">
               1.1. Personal Information
             </h2>

@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ref, get } from "firebase/database";
-import { rtdb } from "@/lib/firebase";
 import {
   UsersIcon,
   ClockIcon,
@@ -22,37 +20,13 @@ export default function AdminStats() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const baseRef = ref(rtdb, "Post-Graduate-Admission");
-      const snapshot = await get(baseRef);
-      if (!snapshot.exists()) return;
-
-      const data = snapshot.val();
-      let total = 0;
-      let pending = 0;
-      let approved = 0;
-      let rejected = 0;
-
-      const traverse = (node: any) => {
-        for (const entry of Object.values(node)) {
-          if (typeof entry === "object" && entry.status) {
-            total++;
-            if (entry.status === "pending") pending++;
-            else if (entry.status === "approved") approved++;
-            else if (entry.status === "rejected") rejected++;
-          } else if (typeof entry === "object") {
-            traverse(entry);
-          }
-        }
-      };
-
-      traverse(data);
-
-      const studentSnap = await get(ref(rtdb, "students"));
-      const registered = studentSnap.exists()
-        ? Object.keys(studentSnap.val()).length
-        : 0;
-
-      setStats({ total, pending, approved, rejected, registered });
+      try {
+        const res = await fetch("/api/admin/stats");
+        const data = await res.json();
+        setStats(data);
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
     };
 
     fetchStats();

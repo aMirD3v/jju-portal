@@ -4,79 +4,72 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding database...');
+  console.log('🔁 Seeding Postgraduate database...');
 
-  // Clean up previous data
-  await prisma.availableProgram.deleteMany();
-  await prisma.availableCollege.deleteMany();
-  await prisma.program.deleteMany();
-  await prisma.college.deleteMany();
-  await prisma.admissionConfig.deleteMany();
+  // Cleanup in the right order to avoid FK constraint issues
+  await prisma.availableProgramPostGraduate.deleteMany();
+  await prisma.availableCollegePostGraduate.deleteMany();
+  await prisma.programPostGraduate.deleteMany();
+  await prisma.collegePostGraduate.deleteMany();
+  await prisma.admissionConfigPostGraduate.deleteMany();
 
-  // Create colleges
+  // Create postgraduate colleges
   const collegesData = [
-    { name: "College of Engineering" },
-    { name: "Institute of Health Science" },
-    { name: "College of Natural Sciences" },
-    { name: "College of Business and Economics" },
-    { name: "College of Social Sciences" },
+    { name: "Postgraduate College of Engineering" },
+    { name: "Postgraduate Institute of Health Science" },
+    { name: "Postgraduate College of Natural Sciences" },
+    { name: "Postgraduate College of Business and Economics" },
+    { name: "Postgraduate College of Social Sciences" },
   ];
 
-  await prisma.college.createMany({ data: collegesData });
-  const allColleges = await prisma.college.findMany();
+  await prisma.collegePostGraduate.createMany({ data: collegesData });
+  const allColleges = await prisma.collegePostGraduate.findMany();
 
-  // Define programs for each college
+  // Define postgraduate programs
   const programData = [
     {
-      collegeName: "College of Engineering",
+      collegeName: "Postgraduate College of Engineering",
       programs: [
-        { name: "Civil Engineering", year: 5 },
-        { name: "Mechanical Engineering", year: 5 },
-        { name: "Electrical Engineering", year: 5 },
+        { name: "Software Engineering MSc", year: 2 },
+        { name: "Electrical Engineering MSc", year: 2 },
       ],
     },
     {
-      collegeName: "Institute of Health Science",
+      collegeName: "Postgraduate Institute of Health Science",
       programs: [
-        { name: "Public Health", year: 5 },
-        { name: "Nursing", year: 5 },
-        { name: "Medical Lab", year: 5 },
+        { name: "Public Health MSc", year: 2 },
+        { name: "Clinical Nursing MSc", year: 2 },
       ],
     },
     {
-      collegeName: "College of Natural Sciences",
+      collegeName: "Postgraduate College of Natural Sciences",
       programs: [
-        { name: "Biology", year: 4 },
-        { name: "Chemistry", year: 4 },
-        { name: "Physics", year: 4 },
-        { name: "Mathematics", year: 4 },
+        { name: "Physics MSc", year: 2 },
+        { name: "Chemistry MSc", year: 2 },
       ],
     },
     {
-      collegeName: "College of Business and Economics",
+      collegeName: "Postgraduate College of Business and Economics",
       programs: [
-        { name: "Accounting", year: 4 },
-        { name: "Economics", year: 4 },
-        { name: "Management", year: 5 },
-        { name: "Marketing", year: 4 },
+        { name: "MBA", year: 2 },
+        { name: "Economics MSc", year: 2 },
       ],
     },
     {
-      collegeName: "College of Social Sciences",
+      collegeName: "Postgraduate College of Social Sciences",
       programs: [
-        { name: "Sociology", year: 4 },
-        { name: "Political Science", year: 5 },
-        { name: "Psychology", year: 5 },
+        { name: "Sociology MSc", year: 2 },
+        { name: "Psychology MSc", year: 2 },
       ],
     },
   ];
 
-  // Create programs and associate them with their colleges
+  // Create programs linked to their colleges
   for (const collegeGroup of programData) {
     const college = allColleges.find(c => c.name === collegeGroup.collegeName);
     if (!college) continue;
 
-    await prisma.program.createMany({
+    await prisma.programPostGraduate.createMany({
       data: collegeGroup.programs.map(p => ({
         name: p.name,
         year: p.year,
@@ -85,20 +78,19 @@ async function main() {
     });
   }
 
-  // Create admission config
+  // Create postgraduate admission config
   const now = new Date();
-  await prisma.admissionConfig.create({
+  await prisma.admissionConfigPostGraduate.create({
     data: {
       applicationStart: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000),
       applicationDeadline: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000),
     },
   });
 
-  // Mark some colleges as available
+  // Make some colleges available for application
   const availableCollegeNames = [
-    "College of Engineering",
-    "College of Natural Sciences",
-    "College of Business and Economics",
+    "Postgraduate College of Engineering",
+    "Postgraduate College of Business and Economics",
   ];
   const availableCollegeEntities = [];
 
@@ -106,21 +98,21 @@ async function main() {
     const college = allColleges.find(c => c.name === name);
     if (!college) continue;
 
-    const availableCollege = await prisma.availableCollege.create({
+    const availableCollege = await prisma.availableCollegePostGraduate.create({
       data: { collegeId: college.id },
     });
 
     availableCollegeEntities.push(availableCollege);
   }
 
-  // Create AvailablePrograms: link programs to their available colleges
-  const allPrograms = await prisma.program.findMany();
+  // Create available programs under available colleges
+  const allPrograms = await prisma.programPostGraduate.findMany();
 
   for (const availableCollege of availableCollegeEntities) {
     const programs = allPrograms.filter(p => p.collegeId === availableCollege.collegeId);
 
     for (const program of programs) {
-      await prisma.availableProgram.create({
+      await prisma.availableProgramPostGraduate.create({
         data: {
           programId: program.id,
           availableCollegeId: availableCollege.id,
@@ -129,7 +121,7 @@ async function main() {
     }
   }
 
-  console.log("✅ Seeding complete.");
+  console.log("✅ Postgraduate seeding complete.");
 }
 
 main()

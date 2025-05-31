@@ -13,6 +13,20 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  password    String
+  role        String
+  email       String
+  name        String
+  createdAt   DateTime @default(now())
+}
+
+
+// Student application model for undergraduate programs
+
 model StudentApplication {
   id                  String   @id @default(uuid())
   studentID           String   @unique
@@ -30,6 +44,7 @@ model StudentApplication {
   woreda              String
   studentPhone        String
   studentEmail        String
+  academicYear        String 
 
   enrolledBefore      String
   postSecondary       PostSecondaryEducation[]
@@ -49,8 +64,9 @@ model StudentApplication {
   grade12Url          String?
   grade10Url          String?
   grade8Url           String?
-
+  
   status              String
+  rejectionReason     String?
   createdAt           DateTime @default(now())
 }
 
@@ -61,16 +77,6 @@ model PostSecondaryEducation {
   institutionName String
   country     String
   cgpaEarned  String
-}
-
-model User {
-  id          String   @id @default(uuid())
-  username    String   @unique
-  password    String
-  role        String
-  email       String
-  name        String
-  createdAt   DateTime @default(now())
 }
 
 
@@ -109,6 +115,104 @@ model AvailableProgram {
   program            Program           @relation(fields: [programId], references: [id])
   programId          Int
   availableCollege   AvailableCollege  @relation(fields: [availableCollegeId], references: [id])
+  availableCollegeId Int
+
+  @@unique([programId, availableCollegeId])
+}
+
+
+
+
+// Student application model for Postgraduate programs
+
+model StudentApplicationPostGraduate {
+  id                  String   @id @default(uuid())
+  studentID           String   @unique
+  institute           String
+  department          String
+  admission           String
+  firstName           String
+  fatherName          String
+  gFatherName         String
+  sex                 String
+  dob                 DateTime?
+
+  region              String
+  zone                String
+  woreda              String
+  studentPhone        String
+  studentEmail        String
+  academicYear        String 
+
+  enrolledBefore      String
+  postSecondary       PostSecondaryEducationPostGraduate[]
+
+  sponsor             String?
+  sponsorName         String?
+  sponsorRegion       String?
+  sponsorZone         String?
+  sponsorWoreda       String?
+  sponsorEmail        String?
+  sponsorURL          String?
+
+  signed              Boolean
+  studentPhotoUrl     String? // File uploads handled via cloud storage
+  diplomaUrl          String?
+  highSchoolUrl       String?
+  grade12Url          String?
+  grade10Url          String?
+  grade8Url           String?
+  
+  status              String
+  rejectionReason     String?
+  createdAt           DateTime @default(now())
+}
+
+model PostSecondaryEducationPostGraduate {
+  id          String   @id @default(uuid())
+  application StudentApplicationPostGraduate @relation(fields: [applicationId], references: [id])
+  applicationId String
+  institutionName String
+  country     String
+  cgpaEarned  String
+}
+
+
+model CollegePostGraduate {
+  id               Int               @id @default(autoincrement())
+  name             String
+  programs         ProgramPostGraduate[]
+  availableCollege AvailableCollegePostGraduate[]
+}
+
+model ProgramPostGraduate {
+  id                Int                @id @default(autoincrement())
+  name              String
+  year              Int
+  college           CollegePostGraduate            @relation(fields: [collegeId], references: [id])
+  collegeId         Int
+  availablePrograms AvailableProgramPostGraduate[]
+}
+
+model AdmissionConfigPostGraduate {
+  id                  Int      @id @default(autoincrement())
+  applicationStart    DateTime
+  applicationDeadline DateTime
+  createdAt           DateTime @default(now())
+}
+
+model AvailableCollegePostGraduate {
+  id                Int               @id @default(autoincrement())
+  college           CollegePostGraduate           @relation(fields: [collegeId], references: [id])
+  collegeId         Int
+  programs          AvailableProgramPostGraduate[]
+}
+
+model AvailableProgramPostGraduate {
+  id                 Int               @id @default(autoincrement())
+  program            ProgramPostGraduate           @relation(fields: [programId], references: [id])
+  programId          Int
+  availableCollege   AvailableCollegePostGraduate  @relation(fields: [availableCollegeId], references: [id])
   availableCollegeId Int
 
   @@unique([programId, availableCollegeId])

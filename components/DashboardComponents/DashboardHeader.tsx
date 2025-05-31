@@ -25,6 +25,8 @@ export default function DashboardHeader() {
           <h1 className="text-2xl md:text-2xl font-bold text-blue-500 ms-5">
             {pathname === "/dashboard/admin" && "Dashboard"}
             {pathname === "/dashboard/admin/applications" && "Applications"}
+            {pathname === "/dashboard/admin/admission" && "Admission"}
+            {pathname === "/dashboard/admin/admission/manage" && "Admission"}
             {pathname === "/dashboard/admin/users" && "Manage Users"}
             {pathname === "/dashboard/staff" && "Dashboard"}
             {pathname === "/dashboard/staff/applications" && "Applications"}

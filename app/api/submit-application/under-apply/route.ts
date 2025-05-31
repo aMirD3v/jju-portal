@@ -4,6 +4,57 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+// Helper: Generate Ethiopian year suffix
+const getEthiopianYearSuffix = (): string => {
+  const date = new Date();
+  const gYear = date.getFullYear();
+  const gMonth = date.getMonth() + 1;
+  const ethYear =
+    gMonth < 9 || (gMonth === 9 && date.getDate() < 11)
+      ? gYear - 8
+      : gYear - 7;
+  return String(ethYear).slice(-2);
+};
+
+const getEthiopianYear = (): number => {
+  const date = new Date();
+  const gYear = date.getFullYear();
+  const gMonth = date.getMonth() + 1;
+  return gMonth < 9 || (gMonth === 9 && date.getDate() < 11)
+    ? gYear - 8
+    : gYear - 7;
+};
+
+
+// Helper: Generate the new Student ID
+const generateStudentID = async (): Promise<string> => {
+  const yearSuffix = getEthiopianYearSuffix();
+  const idPrefix = `JJU${yearSuffix}AD`;
+
+  const existingStudents = await prisma.studentApplication.findMany({
+    where: {
+      studentID: {
+        startsWith: idPrefix,
+      },
+    },
+    select: {
+      studentID: true,
+    },
+  });
+
+  const existingNumbers = existingStudents
+    .map((s) => {
+      const match = s.studentID.match(new RegExp(`^${idPrefix}(\\d{4})$`));
+      return match ? parseInt(match[1], 10) : null;
+    })
+    .filter((n): n is number => n !== null);
+
+  const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+  const paddedNumber = String(nextNumber).padStart(4, "0");
+
+  return `${idPrefix}${paddedNumber}`;
+};
+
 export async function POST(req: Request) {
   try {
     const data = await req.json();
@@ -14,10 +65,15 @@ export async function POST(req: Request) {
       uploadedFiles,
       dob,
       email,
-      studentPhoto,        // ❌ exclude from DB save
-      educationDocs,       // ❌ exclude from DB save
+      studentPhoto,        // ❌ not saved
+      educationDocs,       // ❌ not saved
       ...student
     } = data;
+
+    // Generate new Student ID
+    const studentID = await generateStudentID();
+
+    const academicYear = getEthiopianYear();
 
     // Format DOB
     const dobFormatted = dob ? new Date(dob).toISOString() : null;
@@ -29,6 +85,8 @@ export async function POST(req: Request) {
     const application = await prisma.studentApplication.create({
       data: {
         ...student,
+        studentID,                      // 💡 Use generated ID
+        academicYear: String(academicYear),  // 💡 Save as string or number
         dob: dobFormatted,
         studentPhotoUrl: uploadedFiles?.studentPhoto || null,
         diplomaUrl: uploadedFiles?.diploma || null,
@@ -45,7 +103,7 @@ export async function POST(req: Request) {
     // Create the user account
     await prisma.user.create({
       data: {
-        username: student.studentID,
+        username: studentID,                   // 💡 Use generated ID
         password: hashedPassword,
         role: "student",
         email: student.studentEmail,
@@ -53,9 +111,9 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, studentID });
   } catch (error) {
     console.error("Error in application submission:", error);
-    return NextResponse.json({ success: false, error: String(error) });
+    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }

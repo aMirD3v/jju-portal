@@ -1,11 +1,17 @@
-//  lib/auth.ts
-import { db } from './firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+// lib/auth.ts
+import { prisma } from './prisma';
 
 export const getUserWithUsername = async (username: string) => {
-  const q = query(collection(db, 'users'), where('username', '==', username));
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) return null;
-  const doc = snapshot.docs[0];
-  return { id: doc.id, ...doc.data() } as any;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { username },
+    });
+    
+    if (!user) return null;
+    
+    return user;
+  } catch (error) {
+    console.error('Error fetching user with username:', error);
+    return null;
+  }
 };

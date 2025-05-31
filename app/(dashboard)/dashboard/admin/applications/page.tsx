@@ -1,11 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
-import { get, ref, update } from "firebase/database";
-import { rtdb } from "@/lib/firebase";
 import { XCircleIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Menu } from "@headlessui/react";
 
 type StudentRecord = {
+  id: string;
   studentID: string;
   firstName: string;
   fatherName: string;
@@ -17,10 +16,17 @@ type StudentRecord = {
 };
 
 export default function ApplicationsPage() {
+  const [programLevel, setProgramLevel] = useState<
+    "undergraduate" | "postgraduate"
+  >("undergraduate");
   const [applications, setApplications] = useState<StudentRecord[]>([]);
   const [filtered, setFiltered] = useState<StudentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedApp, setSelectedApp] = useState<any | null>(null);
+
+  const [showRejectionModal, setShowRejectionModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [rejectionApp, setRejectionApp] = useState<StudentRecord | null>(null);
 
   const [institutes, setInstitutes] = useState<string[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
@@ -35,58 +41,28 @@ export default function ApplicationsPage() {
 
   useEffect(() => {
     const fetchAllApplications = async () => {
-      const snapshot = await get(ref(rtdb, "Post-Graduate-Admission"));
-      const data = snapshot.val();
-      if (!data) {
-        setApplications([]);
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `/api/admission-officer/${programLevel}/applications`
+        );
+        const data = await res.json();
+
+        setApplications(data.applications);
+        setFiltered(data.applications);
+        setInstitutes(data.institutes);
+        setDepartments(data.departments);
+        setYears(data.years.sort());
+      } catch (error) {
+        console.error("Error fetching applications:", error);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const result: StudentRecord[] = [];
-      const instituteSet = new Set<string>();
-      const departmentSet = new Set<string>();
-      const yearSet = new Set<string>();
-
-      Object.entries(data).forEach(([institute, depts]) => {
-        instituteSet.add(institute);
-
-        Object.entries(depts as any).forEach(([department, yearsObj]) => {
-          departmentSet.add(department);
-
-          Object.entries(yearsObj as any).forEach(([year, students]) => {
-            yearSet.add(year);
-
-            Object.entries(students as any).forEach(
-              ([id, record]: [string, any]) => {
-                result.push({
-                  studentID: record.studentID,
-                  firstName: record.firstName,
-                  fatherName: record.fatherName,
-                  gFatherName: record.gFatherName,
-                  institute,
-                  department,
-                  academicYear: year,
-                  status: record.status || "pending",
-                });
-              }
-            );
-          });
-        });
-      });
-
-      setApplications(result);
-      setFiltered(result);
-      setInstitutes(Array.from(instituteSet));
-      setDepartments(Array.from(departmentSet));
-      setYears(Array.from(yearSet).sort());
-      setLoading(false);
     };
 
     fetchAllApplications();
-  }, []);
+  }, [programLevel]);
 
-  // Filter + Search + Sort logic
   useEffect(() => {
     let result = [...applications];
 
@@ -129,15 +105,40 @@ export default function ApplicationsPage() {
   ]);
 
   const updateStatus = async (app: StudentRecord, newStatus: string) => {
-    const safeID = app.studentID.replace(/\//g, "_");
-    const path = `Post-Graduate-Admission/${app.institute}/${app.department}/${app.academicYear}/${safeID}`;
-    await update(ref(rtdb, path), { status: newStatus });
+    try {
+      await fetch(
+        `/api/admission-officer/${programLevel}/applications/${app.id}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
 
-    setFiltered((prev) =>
-      prev.map((a) =>
-        a.studentID === app.studentID ? { ...a, status: newStatus } : a
-      )
-    );
+      setFiltered((prev) =>
+        prev.map((a) =>
+          a.studentID === app.studentID ? { ...a, status: newStatus } : a
+        )
+      );
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+  };
+
+  const viewApplication = async (id: string) => {
+    try {
+      const res = await fetch(
+        `/api/admission-officer/${programLevel}/applications/${id}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedApp(data);
+      } else {
+        alert("Full application data not found.");
+      }
+    } catch (error) {
+      console.error("Error fetching application details:", error);
+    }
   };
 
   const toggleSort = (key: keyof StudentRecord) => {
@@ -150,10 +151,10 @@ export default function ApplicationsPage() {
   };
 
   const statusBadge = (status: string) => {
-    const base = "px-2 py-1 rounded-full  text-xs font-semibold";
+    const base = "px-2 py-1 rounded-full text-xs font-semibold";
     if (status === "approved")
       return (
-        <span className={`${base} bg-green-100  text-green-800`}>Approved</span>
+        <span className={`${base} bg-green-100 text-green-800`}>Approved</span>
       );
     if (status === "rejected")
       return (
@@ -164,231 +165,31 @@ export default function ApplicationsPage() {
     );
   };
 
+  const isPdfFile = (url: string) => {
+    return url.toLowerCase().endsWith(".pdf");
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow">
-      {/* Application Modal */}
-
-      {selectedApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 relative">
-            <button
-              className="absolute top-3 right-3 text-gray-500 hover:text-red-600"
-              onClick={() => setSelectedApp(null)}
-            >
-              ✕
-            </button>
-
-            <h2 className="text-2xl font-bold text-blue-600 mb-4">
-              Application Details
-            </h2>
-
-            {/* Photo */}
-            {selectedApp.studentPhoto &&
-              typeof selectedApp.studentPhoto === "string" && (
-                <div className="mb-4">
-                  <p className="font-semibold text-gray-700 mb-1">
-                    Student Photo
-                  </p>
-                  <img
-                    src={selectedApp.studentPhoto}
-                    alt="Student"
-                    className="w-32 h-32 object-cover rounded border border-blue-300"
-                  />
-                </div>
-              )}
-
-            {/* Grouped Info */}
-            <div className="space-y-6">
-              {/* Personal Info */}
-              <section>
-                <h3 className="text-lg font-semibold text-blue-500 mb-2">
-                  Personal Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                  <div>
-                    <strong>Full Name:</strong> {selectedApp.firstName}{" "}
-                    {selectedApp.fatherName} {selectedApp.gFatherName}
-                  </div>
-                  <div>
-                    <strong>Gender:</strong> {selectedApp.sex}
-                  </div>
-                  <div>
-                    <strong>DOB:</strong> {selectedApp.dob}
-                  </div>
-                  <div>
-                    <strong>Nationality:</strong> {selectedApp.nationality}
-                  </div>
-                  <div>
-                    <strong>Institute:</strong> {selectedApp.institute}
-                  </div>
-                  <div>
-                    <strong>Department:</strong> {selectedApp.department}
-                  </div>
-                  <div>
-                    <strong>Academic Year:</strong> {selectedApp.academicYear}
-                  </div>
-                  <div>
-                    <strong>Student ID:</strong> {selectedApp.studentID}
-                  </div>
-                  <div>
-                    <strong>Status:</strong> {selectedApp.status}
-                  </div>
-                </div>
-              </section>
-
-              {/* Contact Info */}
-              <section>
-                <h3 className="text-lg font-semibold text-blue-500 mb-2">
-                  Contact & Family
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-                  <div>
-                    <strong>Email:</strong> {selectedApp.email}
-                  </div>
-                  <div>
-                    <strong>Student Phone:</strong> {selectedApp.studentPhone}
-                  </div>
-                  <div>
-                    <strong>Region:</strong> {selectedApp.region}
-                  </div>
-                  <div>
-                    <strong>Zone/Woreda:</strong> {selectedApp.zone},{" "}
-                    {selectedApp.woreda}
-                  </div>
-                  <div>
-                    <strong>Mother:</strong> {selectedApp.motherFirstName}{" "}
-                    {selectedApp.motherLastName} ({selectedApp.motherJob})
-                  </div>
-                  <div>
-                    <strong>Father's Job:</strong> {selectedApp.fatherJob}
-                  </div>
-                  <div>
-                    <strong>Emergency Contact:</strong>{" "}
-                    {selectedApp.contact1FirstName}{" "}
-                    {selectedApp.contact1FatherName} (
-                    {selectedApp.contact1Relation})
-                  </div>
-                </div>
-              </section>
-
-              {/* Education */}
-              <section>
-                <h3 className="text-lg font-semibold text-blue-500 mb-2">
-                  Education Info
-                </h3>
-                <div className="text-sm text-gray-700 space-y-2">
-                  <div>
-                    <strong>Stream:</strong> {selectedApp.stream}
-                  </div>
-                  <div>
-                    <strong>Grade 12 Result:</strong>{" "}
-                    {selectedApp.grade12result}
-                  </div>
-                  {selectedApp.secondarySchools?.length > 0 && (
-                    <div>
-                      <strong>Secondary Schools:</strong>
-                      <ul className="list-disc ml-6 mt-1 space-y-1">
-                        {selectedApp.secondarySchools.map(
-                          (school: any, idx: number) => (
-                            <li key={idx}>
-                              {school.gradeLevel} - {school.schoolName} (
-                              {school.region}, {school.yearEC})
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                  {selectedApp.postSecondaryEducation?.length > 0 && (
-                    <div>
-                      <strong>Post-Secondary Education:</strong>
-                      <ul className="list-disc ml-6 mt-1 space-y-1">
-                        {selectedApp.postSecondaryEducation.map(
-                          (edu: any, idx: number) => (
-                            <li key={idx}>
-                              {edu.institutionName} - {edu.country} (
-                              {edu.fromGC} - {edu.toGC}), CGPA: {edu.cgpaEarned}
-                              /{edu.maxCgpa}
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              {/* Sponsor */}
-              <section>
-                <h3 className="text-lg font-semibold text-blue-500 mb-2">
-                  Sponsor
-                </h3>
-                <div className="text-sm text-gray-700 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <strong>Sponsor Type:</strong> {selectedApp.sponsor}
-                  </div>
-                  <div>
-                    <strong>Sponsor Name:</strong> {selectedApp.sponsorName}
-                  </div>
-                  <div>
-                    <strong>Email:</strong> {selectedApp.sponsorEmail}
-                  </div>
-                  <div>
-                    <strong>Website:</strong> {selectedApp.sponsorURL}
-                  </div>
-                </div>
-              </section>
-
-              {/* Documents */}
-              {selectedApp.educationDocs && (
-                <section>
-                  <h3 className="text-lg font-semibold text-blue-500 mb-2">
-                    Uploaded Documents
-                  </h3>
-                  <ul className="list-none text-sm text-blue-600 space-y-1">
-                    {Object.entries(selectedApp.educationDocs).map(
-                      ([label, fileUrl]: any) => {
-                        if (!fileUrl) return null;
-                        return (
-                          <li key={label}>
-                            <a
-                              href={fileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:underline"
-                              download
-                            >
-                              📄 {label.replace(/([A-Z])/g, " $1")} (Download)
-                            </a>
-                          </li>
-                        );
-                      }
-                    )}
-                  </ul>
-                </section>
-              )}
-            </div>
-
-            <div className="mt-6 text-right">
-              <button
-                onClick={() => setSelectedApp(null)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-
       <h1 className="text-3xl font-bold text-blue-600 mb-4">
         Applications Management
       </h1>
 
-      {/* Filters and Search */}
+      {/* Filters */}
       <div className="grid md:grid-cols-5 gap-4 mb-6">
+        {/* Program level selector */}
+
+        <select
+          value={programLevel}
+          onChange={(e) =>
+            setProgramLevel(e.target.value as "undergraduate" | "postgraduate")
+          }
+          className="border border-blue-500 rounded p-2"
+        >
+          <option value="undergraduate">Undergraduate</option>
+          <option value="postgraduate">Postgraduate</option>
+        </select>
+
         <select
           className="p-2 border border-blue-500 rounded"
           value={selectedInstitute}
@@ -442,7 +243,7 @@ export default function ApplicationsPage() {
 
         <input
           type="text"
-          className="p-2 border border-blue-500 rounded"
+          className="p-2 border border-blue-500 rounded text-sm"
           placeholder="Search by name or ID..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -461,7 +262,6 @@ export default function ApplicationsPage() {
         </button>
       </div>
 
-      {/* Total */}
       <div className="text-sm text-gray-500 mb-2">
         Showing <strong>{filtered.length}</strong> of{" "}
         <strong>{applications.length}</strong> applications
@@ -469,28 +269,7 @@ export default function ApplicationsPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <svg
-            className="animate-spin h-8 w-8 text-blue-500 mb-4"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-            ></path>
-          </svg>
-        </div>
+        <div className="flex justify-center items-center py-12">Loading...</div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <XCircleIcon className="w-10 h-10 mx-auto text-gray-300 mb-2" />
@@ -557,7 +336,10 @@ export default function ApplicationsPage() {
                               className={`w-full text-left px-4 py-2 text-sm ${
                                 active ? "bg-red-100" : ""
                               }`}
-                              onClick={() => updateStatus(app, "rejected")}
+                              onClick={() => {
+                                setRejectionApp(app);
+                                setShowRejectionModal(true);
+                              }}
                             >
                               Reject
                             </button>
@@ -566,19 +348,7 @@ export default function ApplicationsPage() {
                         <Menu.Item>
                           {({ active }) => (
                             <button
-                              onClick={async () => {
-                                const safeID = app.studentID.replace(
-                                  /\//g,
-                                  "_"
-                                );
-                                const path = `Post-Graduate-Admission/${app.institute}/${app.department}/${app.academicYear}/${safeID}`;
-                                const snapshot = await get(ref(rtdb, path));
-                                if (snapshot.exists()) {
-                                  setSelectedApp(snapshot.val());
-                                } else {
-                                  alert("Full application data not found.");
-                                }
-                              }}
+                              onClick={() => viewApplication(app.id)}
                               className={`w-full text-left px-4 py-2 text-sm ${
                                 active ? "bg-blue-100" : ""
                               }`}
@@ -594,6 +364,291 @@ export default function ApplicationsPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Rejection Reason Modal */}
+      {showRejectionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur">
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
+            <h2 className="text-lg font-semibold text-red-600 mb-3">
+              Rejection Reason
+            </h2>
+            <textarea
+              className="w-full border border-gray-300 rounded p-2 text-sm"
+              placeholder="Enter reason for rejection..."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+                onClick={() => {
+                  setShowRejectionModal(false);
+                  setRejectionReason("");
+                  setRejectionApp(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                onClick={async () => {
+                  if (rejectionApp && rejectionReason.trim()) {
+                    await fetch(
+                      `/api/admission-officer/${programLevel}/applications/${rejectionApp.id}/status`,
+                      {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          status: "rejected",
+                          rejectionReason,
+                        }),
+                      }
+                    );
+
+                    setFiltered((prev) =>
+                      prev.map((a) =>
+                        a.studentID === rejectionApp.studentID
+                          ? { ...a, status: "rejected" }
+                          : a
+                      )
+                    );
+
+                    setShowRejectionModal(false);
+                    setRejectionReason("");
+                    setRejectionApp(null);
+                  }
+                }}
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Application Modal */}
+      {selectedApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 relative">
+            <button
+              className="absolute top-3 right-3 text-gray-500 hover:text-red-600"
+              onClick={() => setSelectedApp(null)}
+            >
+              ✕
+            </button>
+
+            <h2 className="text-2xl font-bold text-blue-600 mb-4">
+              Application Details
+            </h2>
+
+            {/* Student Photo */}
+            {selectedApp.studentPhotoUrl && (
+              <div className="mb-4 flex justify-center">
+                <img
+                  src={selectedApp.studentPhotoUrl}
+                  alt="Student"
+                  className="w-32 h-32 object-cover rounded-full border-4 border-blue-200 shadow"
+                />
+              </div>
+            )}
+
+            {/* Personal Information */}
+            <section className="mb-6">
+              <h3 className="text-lg font-semibold text-blue-500 mb-2">
+                Personal Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                <p>
+                  <strong>Full Name:</strong> {selectedApp.firstName}{" "}
+                  {selectedApp.fatherName} {selectedApp.gFatherName}
+                </p>
+                <p>
+                  <strong>Gender:</strong> {selectedApp.sex}
+                </p>
+                <p>
+                  <strong>Date of Birth:</strong>{" "}
+                  {selectedApp.dob
+                    ? new Date(selectedApp.dob).toLocaleDateString()
+                    : "-"}
+                </p>
+                <p>
+                  <strong>Institute:</strong> {selectedApp.institute}
+                </p>
+                <p>
+                  <strong>Department:</strong> {selectedApp.department}
+                </p>
+                <p>
+                  <strong>Admission Type:</strong> {selectedApp.admission}
+                </p>
+                <p>
+                  <strong>Academic Year:</strong> {selectedApp.academicYear}
+                </p>
+                <p>
+                  <strong>Student ID:</strong> {selectedApp.studentID}
+                </p>
+                <p>
+                  <strong>Status:</strong> {selectedApp.status}
+                </p>
+              </div>
+            </section>
+
+            {/* Contact Information */}
+            <section className="mb-6">
+              <h3 className="text-lg font-semibold text-blue-500 mb-2">
+                Contact Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                <p>
+                  <strong>Email:</strong> {selectedApp.studentEmail}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {selectedApp.studentPhone}
+                </p>
+                <p>
+                  <strong>Region:</strong> {selectedApp.region}
+                </p>
+                <p>
+                  <strong>Zone:</strong> {selectedApp.zone}
+                </p>
+                <p>
+                  <strong>Woreda:</strong> {selectedApp.woreda}
+                </p>
+              </div>
+            </section>
+
+            {/* Post-Secondary Education */}
+            {selectedApp.postSecondary &&
+              selectedApp.postSecondary.length > 0 && (
+                <section className="mb-6">
+                  <h3 className="text-lg font-semibold text-blue-500 mb-2">
+                    Post-Secondary Education
+                  </h3>
+                  <ul className="list-disc ml-6 text-sm text-gray-700 space-y-1">
+                    {selectedApp.postSecondary.map((edu: any, idx: number) => (
+                      <li key={idx}>
+                        {edu.institutionName} - {edu.country}, CGPA:{" "}
+                        {edu.cgpaEarned}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+            {/* Sponsor */}
+            {selectedApp.sponsor && (
+              <section className="mb-6">
+                <h3 className="text-lg font-semibold text-blue-500 mb-2">
+                  Sponsor Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
+                  <p>
+                    <strong>Sponsor:</strong> {selectedApp.sponsor}
+                  </p>
+                  <p>
+                    <strong>Name:</strong> {selectedApp.sponsorName || "-"}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {selectedApp.sponsorEmail || "-"}
+                  </p>
+                  <p>
+                    <strong>Region:</strong> {selectedApp.sponsorRegion || "-"}
+                  </p>
+                  <p>
+                    <strong>Zone:</strong> {selectedApp.sponsorZone || "-"}
+                  </p>
+                  <p>
+                    <strong>Woreda:</strong> {selectedApp.sponsorWoreda || "-"}
+                  </p>
+                  <p>
+                    <strong>Website:</strong>
+                    {selectedApp.sponsorURL ? (
+                      <a
+                        href={selectedApp.sponsorURL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline ml-1"
+                      >
+                        {selectedApp.sponsorURL}
+                      </a>
+                    ) : (
+                      " -"
+                    )}
+                  </p>
+                </div>
+              </section>
+            )}
+
+            {/* Uploaded Documents */}
+            <section>
+              <h3 className="text-lg font-semibold text-blue-500 mb-2">
+                Uploaded Documents
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { label: "Diploma", url: selectedApp.diplomaUrl },
+                  {
+                    label: "High School Transcript",
+                    url: selectedApp.highSchoolUrl,
+                  },
+                  { label: "Grade 12 Result", url: selectedApp.grade12Url },
+                  { label: "Grade 10 Result", url: selectedApp.grade10Url },
+                  { label: "Grade 8 Result", url: selectedApp.grade8Url },
+                ].map(
+                  (doc) =>
+                    doc.url && (
+                      <div
+                        key={doc.label}
+                        className="border rounded p-2 shadow-sm flex flex-col"
+                      >
+                        <p className="text-sm text-gray-700 font-medium mb-1">
+                          {doc.label}
+                        </p>
+                        {isPdfFile(doc.url) ? (
+                          <div className="flex flex-col items-center justify-center bg-gray-100 border rounded p-4 h-40">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-12 w-12 text-red-600 mb-2"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zM6 20V4h7v5h5v11H6z" />
+                            </svg>
+                            <p className="text-xs text-gray-600">
+                              PDF Document
+                            </p>
+                          </div>
+                        ) : (
+                          <img
+                            src={doc.url}
+                            alt={doc.label}
+                            className="w-full h-40 object-cover rounded border"
+                          />
+                        )}
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block text-xs text-blue-600 mt-1 hover:underline"
+                        >
+                          View / Download
+                        </a>
+                      </div>
+                    )
+                )}
+              </div>
+            </section>
+
+            <div className="mt-6 text-right">
+              <button
+                onClick={() => setSelectedApp(null)}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

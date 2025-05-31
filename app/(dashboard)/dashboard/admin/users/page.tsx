@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 type User = {
   id: string;
@@ -17,15 +17,17 @@ export default function AdminUsersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
-  const [editableUsers, setEditableUsers] = useState<Record<string, { name: string; role: string }>>({});
+  const [editableUsers, setEditableUsers] = useState<
+    Record<string, { name: string; role: string }>
+  >({});
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'student' | 'staff'>('student');
+  const [filter, setFilter] = useState<"student" | "staff">("student");
 
   useEffect(() => {
-    if (status === 'loading') return;
+    if (status === "loading") return;
 
-    if (!session || session.user?.role !== 'admin') {
-      router.replace('/unauthorized');
+    if (!session || session.user?.role !== "admin") {
+      router.replace("/unauthorized");
     } else {
       fetchUsers();
     }
@@ -33,10 +35,10 @@ export default function AdminUsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('/api/admin/users');
+      const res = await fetch("/api/admin/users");
       const data = await res.json();
 
-      const nonAdminUsers = data.filter((user: User) => user.role !== 'admin');
+      const nonAdminUsers = data.filter((user: User) => user.role !== "admin");
       setUsers(nonAdminUsers);
 
       const editState: Record<string, { name: string; role: string }> = {};
@@ -45,13 +47,17 @@ export default function AdminUsersPage() {
       });
       setEditableUsers(editState);
     } catch (error) {
-      toast.error('Failed to fetch users.');
+      toast.error("Failed to fetch users.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (id: string, field: 'name' | 'role', value: string) => {
+  const handleInputChange = (
+    id: string,
+    field: "name" | "role",
+    value: string
+  ) => {
     setEditableUsers((prev) => ({
       ...prev,
       [id]: { ...prev[id], [field]: value },
@@ -61,67 +67,94 @@ export default function AdminUsersPage() {
   const handleUpdate = async (id: string) => {
     const { name, role } = editableUsers[id];
     try {
-      await fetch('/api/admin/users', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      await fetch("/api/admin/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, name, role }),
       });
-      toast.success('User updated successfully');
+      toast.success("User updated successfully");
       fetchUsers();
     } catch (error) {
-      toast.error('Update failed.');
+      toast.error("Update failed.");
     }
   };
 
-  if (status === 'loading' || loading) {
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this user?")) return;
+    try {
+      await fetch(`/api/admin/users/${id}`, { method: "DELETE" });
+      toast.success("User deleted");
+      fetchUsers();
+    } catch (error) {
+      toast.error("Failed to delete user.");
+    }
+  };
+
+  const handleResetPassword = async (id: string) => {
+    if (!confirm("Reset password for this user?")) return;
+    try {
+      await fetch(`/api/admin/users/${id}/reset-password`, { method: "POST" });
+      toast.success("Password reset successfully!");
+    } catch (error) {
+      toast.error("Failed to reset password.");
+    }
+  };
+
+  if (status === "loading" || loading) {
     return (
-       <div className="flex h-full items-center justify-center py-12">
-          <svg
-            className="animate-spin h-10 w-10 text-blue-500 mb-4"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            ></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-            ></path>
-          </svg>
-        </div>
+      <div className="flex h-full items-center justify-center py-12">
+        <svg
+          className="animate-spin h-10 w-10 text-blue-500 mb-4"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          ></path>
+        </svg>
+      </div>
     );
   }
 
   const filteredUsers = users.filter((user) => user.role === filter);
 
   return (
-    <div className="bg-white shadow-lg  rounded-lg max-w-6xl mx-auto">
-      <h1 className="text-3xl font-semibold text-blue-500 mb-6">User Management</h1>
+    <div className="bg-white shadow-lg rounded-lg max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-semibold text-blue-500 mb-6">
+        User Management
+      </h1>
 
       <div className="flex space-x-4 mb-4">
         <button
           className={`px-4 py-2 rounded ${
-            filter === 'student' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-600'
+            filter === "student"
+              ? "bg-blue-500 text-white"
+              : "bg-blue-100 text-blue-600"
           }`}
-          onClick={() => setFilter('student')}
+          onClick={() => setFilter("student")}
         >
           Students
         </button>
         <button
           className={`px-4 py-2 rounded ${
-            filter === 'staff' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-600'
+            filter === "staff"
+              ? "bg-blue-500 text-white"
+              : "bg-blue-100 text-blue-600"
           }`}
-          onClick={() => setFilter('staff')}
+          onClick={() => setFilter("staff")}
         >
-          Staffs
+          Staff
         </button>
       </div>
 
@@ -132,7 +165,7 @@ export default function AdminUsersPage() {
               <th className="px-4 py-2">Username</th>
               <th className="px-4 py-2">Email</th>
               <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Role</th>
+              {filter === "staff" && <th className="px-4 py-2">Role</th>}
               <th className="px-4 py-2">Actions</th>
             </tr>
           </thead>
@@ -145,28 +178,45 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-2 text-blue-400">{user.email}</td>
                   <td className="px-4 py-2">
                     <input
-                      value={editable?.name || ''}
-                      onChange={(e) => handleInputChange(user.id, 'name', e.target.value)}
+                      value={editable?.name || ""}
+                      onChange={(e) =>
+                        handleInputChange(user.id, "name", e.target.value)
+                      }
                       className="w-full p-2 border border-blue-200 rounded-md text-blue-500 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                   </td>
-                  <td className="px-4 py-2">
-                    <select
-                      disabled={user.role === 'student'}
-                      value={editable?.role || ''}
-                      onChange={(e) => handleInputChange(user.id, 'role', e.target.value)}
-                      className="w-full p-2 border border-blue-200 rounded-md text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    >
-                      <option value="staff">staff</option>
-                      <option value="student">student</option>
-                    </select>
-                  </td>
-                  <td className="px-4 py-2">
+                  {filter === "staff" && (
+                    <td className="px-4 py-2">
+                      <select
+                        value={editable?.role || ""}
+                        onChange={(e) =>
+                          handleInputChange(user.id, "role", e.target.value)
+                        }
+                        className="w-full p-2 border border-blue-200 rounded-md text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      >
+                        <option value="staff">staff</option>
+                        <option value="student">student</option>
+                      </select>
+                    </td>
+                  )}
+                  <td className="px-4 py-2 flex space-x-2">
                     <button
                       onClick={() => handleUpdate(user.id)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition-all"
+                      className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded text-sm"
                     >
                       Save
+                    </button>
+                    <button
+                      onClick={() => handleResetPassword(user.id)}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-1 px-3 rounded text-sm"
+                    >
+                      Reset PW
+                    </button>
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded text-sm"
+                    >
+                      Delete
                     </button>
                   </td>
                 </tr>

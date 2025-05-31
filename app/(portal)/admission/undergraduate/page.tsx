@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaChevronDown, FaChevronUp, FaUniversity } from "react-icons/fa";
 
-const APPLICATION_START = new Date("2025-04-01T00:00:00Z");
-const APPLICATION_DEADLINE = new Date("2025-05-30T23:59:59Z");
 
 function StatusBanner({
   applicationStarted,
@@ -128,28 +126,64 @@ export default function UndergraduatePage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [colleges, setColleges] = useState<any[]>([]);
   const [now, setNow] = useState(new Date());
+  const [appConfig, setAppConfig] = useState<{
+    applicationStart: string;
+    applicationDeadline: string;
+  } | null>(null);
 
   useEffect(() => {
+    async function fetchConfig() {
+      const res = await fetch("/api/admission/undergraduate/admission-config");
+      const config = await res.json();
+      setAppConfig({
+        applicationStart: config.applicationStart,
+        applicationDeadline: config.applicationDeadline,
+      });
+    }
+
     async function fetchAvailable() {
-      const res = await fetch("/api/admission/available");
+      const res = await fetch("/api/admission/undergraduate/available");
       const json = await res.json();
       const filtered = json.filter((entry: any) => entry.programs.length > 0);
       setColleges(filtered);
     }
 
+    fetchConfig();
     fetchAvailable();
 
     const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  const toggleExpand = (collegeName: string) => {
-    setExpanded((prev) => (prev === collegeName ? null : collegeName));
-  };
+  if (!appConfig) {
+    return (
+     <div className="flex h-full items-center justify-center py-12">
+        <svg
+          className="animate-spin h-10 w-10 text-blue-500 mb-4"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            className="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="4"
+          ></circle>
+          <path
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+          ></path>
+        </svg>
+      </div>
+    );
+  }
 
-  const handleApply = (collegeName: string) => {
-    router.push(`/admission/undergraduate/apply?college=${encodeURIComponent(collegeName)}`);
-  };
+  const APPLICATION_START = new Date(appConfig.applicationStart);
+  const APPLICATION_DEADLINE = new Date(appConfig.applicationDeadline);
 
   const applicationStarted = now >= APPLICATION_START;
   const applicationEnded = now > APPLICATION_DEADLINE;
@@ -158,6 +192,17 @@ export default function UndergraduatePage() {
     (acc, col) => acc + col.programs.length,
     0
   );
+
+  const toggleExpand = (collegeName: string) => {
+    setExpanded((prev) => (prev === collegeName ? null : collegeName));
+  };
+
+  const handleApply = (collegeName: string) => {
+    const collegeEntry = colleges.find((entry) => entry.college.name === collegeName);
+    if (collegeEntry && collegeEntry.college && collegeEntry.college.id) {
+      router.push(`/admission/undergraduate/apply?collegeId=${collegeEntry.college.id}`);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -216,3 +261,4 @@ export default function UndergraduatePage() {
     </div>
   );
 }
+

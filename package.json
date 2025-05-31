@@ -3,9 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "prisma": {
-  "seed": "ts-node --project tsconfig.seed.json prisma/seed.ts"
-},
-
+    "seed": "ts-node --project tsconfig.seed.json prisma/seed.ts"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -21,13 +20,16 @@
     "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.8.2",
     "bcryptjs": "^3.0.2",
+    "canvas": "^3.1.0",
     "firebase": "^11.7.3",
     "firebase-admin": "^13.4.0",
     "formidable": "^3.5.4",
+    "get-stream": "^9.0.1",
     "minio": "^8.0.5",
     "next": "15.3.2",
     "next-auth": "^4.24.11",
     "nodemailer": "^6.10.1",
+    "pdfkit": "^0.17.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.3",
@@ -39,6 +41,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "^20.17.52",
+    "@types/pdfkit": "^0.13.9",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

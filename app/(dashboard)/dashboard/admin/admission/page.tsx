@@ -1,63 +1,62 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function AdmissionManagerPage() {
+  const [tab, setTab] = useState<"undergraduate" | "postgraduate">("undergraduate");
+
   const [colleges, setColleges] = useState<any[]>([]);
   const [availableMap, setAvailableMap] = useState<Map<number, Set<number>>>(new Map());
   const [selectedCollege, setSelectedCollege] = useState<number | null>(null);
   const [localSelections, setLocalSelections] = useState<Set<number>>(new Set());
+  const [admissionStart, setAdmissionStart] = useState("");
+  const [admissionDeadline, setAdmissionDeadline] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [showManager, setShowManager] = useState(false);
-
-  const [newCollegeName, setNewCollegeName] = useState("");
-  const [editingCollegeName, setEditingCollegeName] = useState<string | null>(null);
-  const [newProgramName, setNewProgramName] = useState("");
-  const [newProgramYear, setNewProgramYear] = useState<number>(1);
-  const [admissionStart, setAdmissionStart] = useState("");
-  const [admissionDeadline, setAdmissionDeadline] = useState("");
-
-  // Fetch data
-  useEffect(() => {
-    fetchData();
-    fetchConfig();
-  }, []);
-
   const fetchData = async () => {
     setLoading(true);
-    const [collegeRes, availableRes] = await Promise.all([
-      fetch("/api/admission/colleges"),
-      fetch("/api/admission/available"),
+    const [collegeRes, availableRes, configRes] = await Promise.all([
+      fetch(`/api/admission/${tab}/colleges`),
+      fetch(`/api/admission/${tab}/available`),
+      fetch(`/api/admission/${tab}/admission-config`),
     ]);
-    const collegesData = await collegeRes.json();
-    const availableData = await availableRes.json();
 
+    const collegesData = await collegeRes.json();
     setColleges(collegesData);
 
+    const availableData = await availableRes.json();
     const map = new Map<number, Set<number>>();
     availableData.forEach((entry: any) => {
-      map.set(
-        entry.college.id,
-        new Set(entry.programs.map((p: any) => p.id))
-      );
+      map.set(entry.college.id, new Set(entry.programs.map((p: any) => p.id)));
     });
-
     setAvailableMap(map);
+
+    const config = await configRes.json();
+    setAdmissionStart(config.applicationStart.slice(0, 10));
+    setAdmissionDeadline(config.applicationDeadline.slice(0, 10));
+
     setLoading(false);
   };
 
-  const fetchConfig = async () => {
-    const res = await fetch("/api/admission-config");
-    const data = await res.json();
-    if (data) {
-      setAdmissionStart(data.applicationStart.slice(0, 10));
-      setAdmissionDeadline(data.applicationDeadline.slice(0, 10));
-    }
+  useEffect(() => {
+    fetchData();
+  }, [tab]);
+
+  const saveDeadline = async () => {
+    if (!admissionStart || !admissionDeadline) return alert("Fill both dates.");
+    await fetch(`/api/admission/${tab}/admission-config`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        applicationStart: admissionStart,
+        applicationDeadline: admissionDeadline,
+      }),
+    });
+    alert("Admission dates updated!");
   };
 
-  // Availability toggle
   const handleCollegeSelect = (collegeId: number) => {
     setSelectedCollege(collegeId);
     const programs = availableMap.get(collegeId);
@@ -75,8 +74,7 @@ export default function AdmissionManagerPage() {
   const handleSaveAvailability = async () => {
     if (!selectedCollege) return;
     setSaving(true);
-
-    await fetch("/api/admission/available/manage", {
+    await fetch(`/api/admission/${tab}/available/manage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -84,323 +82,157 @@ export default function AdmissionManagerPage() {
         programIds: Array.from(localSelections),
       }),
     });
-
     const newMap = new Map(availableMap);
     newMap.set(selectedCollege, new Set(localSelections));
     setAvailableMap(newMap);
-
     setSaving(false);
     alert("Availability saved.");
   };
 
-  // --- College/Program Management ---
-  const createCollege = async () => {
-    if (!newCollegeName) return alert("Enter college name.");
-    await fetch("/api/admission/colleges/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newCollegeName }),
-    });
-    setNewCollegeName("");
-    fetchData();
-  };
-
-  const editCollege = async (college: any) => {
-    if (!editingCollegeName) return;
-    await fetch(`/api/admission/colleges/${college.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: editingCollegeName }),
-    });
-    setEditingCollegeName(null);
-    fetchData();
-  };
-
-  const deleteCollege = async (collegeId: number) => {
-    if (!confirm("Are you sure?")) return;
-    await fetch(`/api/admission/colleges/${collegeId}`, { method: "DELETE" });
-    setSelectedCollege(null);
-    fetchData();
-  };
-
-  const createProgram = async () => {
-    if (!selectedCollege || !newProgramName) return alert("Fill all fields.");
-    await fetch("/api/admission/programs/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: newProgramName,
-        year: newProgramYear,
-        collegeId: selectedCollege,
-      }),
-    });
-    setNewProgramName("");
-    setNewProgramYear(1);
-    fetchData();
-  };
-
-  const editProgram = async (program: any, newName: string, newYear: number) => {
-    await fetch(`/api/admission/programs/${program.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName, year: newYear }),
-    });
-    fetchData();
-  };
-
-  const deleteProgram = async (programId: number) => {
-    if (!confirm("Are you sure?")) return;
-    await fetch(`/api/admission/programs/${programId}`, { method: "DELETE" });
-    fetchData();
-  };
-
-  const saveDeadline = async () => {
-    if (!admissionStart || !admissionDeadline) return alert("Fill both dates.");
-    await fetch("/api/admission-config", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        applicationStart: admissionStart,
-        applicationDeadline: admissionDeadline,
-      }),
-    });
-    alert("Admission dates updated!");
-  };
-
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
-      <h1 className="text-2xl font-bold mb-6 text-blue-700">🎓 Full Admission Control Panel</h1>
-
-      <button
-        onClick={() => setShowManager(!showManager)}
-        className="mb-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-      >
-        {showManager ? "Hide College/Program Manager" : "Manage Colleges/Programs"}
-      </button>
-
-      {showManager && (
-        <div className="border p-4 mb-6 rounded bg-gray-50">
-          {/* College management */}
-          <div className="mb-4">
-            <h2 className="font-semibold mb-2">Colleges</h2>
-            <div className="flex gap-2 mb-2">
-              <input
-                value={newCollegeName}
-                onChange={(e) => setNewCollegeName(e.target.value)}
-                placeholder="New college name"
-                className="border p-2 rounded w-64"
-              />
-              <button
-                onClick={createCollege}
-                className="px-3 py-1 bg-blue-600 text-white rounded"
-              >
-                Add
-              </button>
-            </div>
-            <ul className="space-y-1 max-h-40 overflow-auto">
-              {colleges.map((c) => (
-                <li key={c.id} className="flex items-center gap-2">
-                  {editingCollegeName !== null && selectedCollege === c.id ? (
-                    <>
-                      <input
-                        value={editingCollegeName}
-                        onChange={(e) => setEditingCollegeName(e.target.value)}
-                        className="border p-1 rounded"
-                      />
-                      <button
-                        onClick={() => editCollege(c)}
-                        className="px-2 py-1 bg-green-600 text-white rounded"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingCollegeName(null)}
-                        className="px-2 py-1 bg-gray-400 text-white rounded"
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => setSelectedCollege(c.id)}
-                        className={`flex-1 text-left ${
-                          selectedCollege === c.id ? "font-semibold text-blue-700" : ""
-                        }`}
-                      >
-                        {c.name}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedCollege(c.id);
-                          setEditingCollegeName(c.name);
-                        }}
-                        className="px-2 py-1 bg-yellow-500 text-white rounded"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => deleteCollege(c.id)}
-                        className="px-2 py-1 bg-red-600 text-white rounded"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
+    <div className="max-w-6xl mx-auto px-6 py-2 space-y-10 text-gray-800">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 shadow-sm px-6 py-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-blue-700 flex items-center gap-2">
+              🎓 Admission Management
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Manage admission dates and program availability with ease.
+            </p>
           </div>
 
-          {/* Program management */}
-          {selectedCollege && (
-            <div className="mb-4">
-              <h2 className="font-semibold mb-2">Programs</h2>
-              <div className="flex gap-2 mb-2">
-                <input
-                  value={newProgramName}
-                  onChange={(e) => setNewProgramName(e.target.value)}
-                  placeholder="Program name"
-                  className="border p-2 rounded w-64"
-                />
-                <input
-                  type="number"
-                  value={newProgramYear}
-                  onChange={(e) => setNewProgramYear(Number(e.target.value))}
-                  placeholder="Years"
-                  className="border p-2 rounded w-20"
-                />
-                <button
-                  onClick={createProgram}
-                  className="px-3 py-1 bg-blue-600 text-white rounded"
-                >
-                  Add
-                </button>
-              </div>
-              <ul className="space-y-1 max-h-40 overflow-auto">
-                {colleges.find((c) => c.id === selectedCollege)?.programs.map((p: any) => (
-                  <li key={p.id} className="flex items-center gap-2">
-                    <input
-                      defaultValue={p.name}
-                      onBlur={(e) =>
-                        e.target.value !== p.name &&
-                        editProgram(p, e.target.value, p.year)
-                      }
-                      className="border p-1 rounded w-64"
-                    />
-                    <input
-                      type="number"
-                      defaultValue={p.year}
-                      onBlur={(e) =>
-                        Number(e.target.value) !== p.year &&
-                        editProgram(p, p.name, Number(e.target.value))
-                      }
-                      className="border p-1 rounded w-20"
-                    />
-                    <button
-                      onClick={() => deleteProgram(p.id)}
-                      className="px-2 py-1 bg-red-600 text-white rounded"
-                    >
-                      Delete
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <Link
+            href="/dashboard/admin/admission/manage"
+            className="inline-block px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+          >
+            Create & Manage
+          </Link>
+        </div>
+      </header>
 
-          {/* Admission config */}
-          <div>
-            <h2 className="font-semibold mb-2">Admission Dates</h2>
-            <div className="flex gap-2 items-center">
-              <label>Start:</label>
-              <input
-                type="date"
-                value={admissionStart}
-                onChange={(e) => setAdmissionStart(e.target.value)}
-                className="border p-1 rounded"
-              />
-              <label>Deadline:</label>
-              <input
-                type="date"
-                value={admissionDeadline}
-                onChange={(e) => setAdmissionDeadline(e.target.value)}
-                className="border p-1 rounded"
-              />
+      {/* Tabs */}
+      <div className="flex gap-2 mt-4">
+        <button
+          onClick={() => setTab("undergraduate")}
+          className={`px-4 py-2 rounded ${
+            tab === "undergraduate"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}
+        >
+          Undergraduate
+        </button>
+        <button
+          onClick={() => setTab("postgraduate")}
+          className={`px-4 py-2 rounded ${
+            tab === "postgraduate"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700"
+          }`}
+        >
+          Postgraduate
+        </button>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="text-center text-gray-500">Loading data...</div>
+      ) : (
+        <>
+          {/* Admission Dates */}
+          <section className="bg-white rounded shadow p-6 w-fit">
+            <h2 className="text-xl font-semibold text-blue-700 mb-4">📅 Admission Dates</h2>
+            <div className="space-y-3">
+              <div className="flex gap-2 items-center">
+                <label className="w-24">Start:</label>
+                <input
+                  type="date"
+                  value={admissionStart}
+                  onChange={(e) => setAdmissionStart(e.target.value)}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
+              <div className="flex gap-2 items-center">
+                <label className="w-24">Deadline:</label>
+                <input
+                  type="date"
+                  value={admissionDeadline}
+                  onChange={(e) => setAdmissionDeadline(e.target.value)}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
               <button
                 onClick={saveDeadline}
-                className="px-3 py-1 bg-green-600 text-white rounded"
+                className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
               >
-                Save
+                Save Dates
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </section>
 
-      {/* Availability management */}
-      {loading ? (
-        <p>Loading colleges and programs...</p>
-      ) : (
-        <div className="flex gap-6">
-          <div className="w-1/3 border rounded p-4">
-            <h2 className="text-lg font-semibold mb-2">Colleges</h2>
-            <ul className="space-y-2 max-h-64 overflow-auto">
-              {colleges.map((college: any) => (
-                <li key={college.id}>
-                  <button
-                    onClick={() => handleCollegeSelect(college.id)}
-                    className={`w-full text-left px-3 py-2 rounded ${
-                      selectedCollege === college.id
-                        ? "bg-blue-100 text-blue-800 font-semibold"
-                        : "hover:bg-gray-100"
-                    }`}
-                  >
-                    {college.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="w-2/3 border rounded p-4">
-            <h2 className="text-lg font-semibold mb-2">Programs</h2>
-            {selectedCollege ? (
-              <>
-                <ul className="space-y-2 max-h-64 overflow-auto">
-                  {colleges
-                    .find((c) => c.id === selectedCollege)
-                    ?.programs.map((program: any) => (
-                      <li key={program.id}>
-                        <label className="flex items-center gap-3 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={localSelections.has(program.id)}
-                            onChange={() => handleToggleProgram(program.id)}
-                            className="w-4 h-4"
-                          />
-                          <span>
-                            {program.name} ({program.year} years)
-                          </span>
-                        </label>
-                      </li>
-                    ))}
+          {/* Program Availability */}
+          <section className="bg-white rounded shadow p-6">
+            <h2 className="text-xl font-semibold text-blue-700 mb-4">📝 Program Availability</h2>
+            <div className="grid md:grid-cols-3 gap-4">
+              {/* Colleges */}
+              <div className="bg-gray-50 rounded p-4">
+                <h3 className="font-semibold mb-2">Colleges</h3>
+                <ul className="space-y-1 max-h-64 overflow-auto">
+                  {colleges.map((college) => (
+                    <li key={college.id}>
+                      <button
+                        onClick={() => handleCollegeSelect(college.id)}
+                        className={`w-full text-left px-3 py-1 rounded ${
+                          selectedCollege === college.id
+                            ? "bg-blue-100 font-semibold"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        {college.name}
+                      </button>
+                    </li>
+                  ))}
                 </ul>
-                <div className="mt-6">
-                  <button
-                    onClick={handleSaveAvailability}
-                    disabled={saving}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {saving ? "Saving..." : "Save Availability"}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <p className="text-gray-500">Select a college to manage availability.</p>
-            )}
-          </div>
-        </div>
+              </div>
+
+              {/* Programs */}
+              <div className="md:col-span-2 bg-gray-50 rounded p-4">
+                {selectedCollege ? (
+                  <>
+                    <ul className="space-y-1 max-h-64 overflow-auto">
+                      {colleges.find((c) => c.id === selectedCollege)?.programs.map((p: any) => (
+                        <li key={p.id}>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={localSelections.has(p.id)}
+                              onChange={() => handleToggleProgram(p.id)}
+                            />
+                            {p.name}{" "}
+                            <span className="text-sm text-gray-500">
+                              ({p.year} years)
+                            </span>
+                          </label>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={handleSaveAvailability}
+                      disabled={saving}
+                      className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {saving ? "Saving..." : "Save Availability"}
+                    </button>
+                  </>
+                ) : (
+                  <p className="text-gray-500 italic">Select a college to assign availability.</p>
+                )}
+              </div>
+            </div>
+          </section>
+        </>
       )}
     </div>
   );

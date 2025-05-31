@@ -22,53 +22,10 @@ export default function ApplicationFormPage() {
     "Declaration",
   ];
 
-  const colleges = [
-    {
-      name: "College of Engineering",
-      programs: [
-        { name: "Civil Engineering", year: "5" },
-        { name: "Mechanical Engineering", year: "5" },
-        { name: "Electrical Engineering", year: "5" },
-      ],
-    },
-    {
-      name: "College of Natural Sciences",
-      programs: [
-        { name: "Biology", year: "4" },
-        { name: "Chemistry", year: "4" },
-        { name: "Physics", year: "4" },
-        { name: "Mathematics", year: "4" },
-      ],
-    },
-    {
-      name: "College of Business and Economics",
-      programs: [
-        { name: "Accounting", year: "4" },
-        { name: "Economics", year: "4" },
-        { name: "Management", year: "5" },
-        { name: "Marketing", year: "4" },
-      ],
-    },
-    {
-      name: "College of Social Sciences",
-      programs: [
-        { name: "Sociology", year: "4" },
-        { name: "Political Science", year: "5" },
-        { name: "Psychology", year: "5" },
-      ],
-    },
-  ];
-
   const searchParams = useSearchParams();
-  const selectedCollegeName = searchParams.get("college");
+  const selectedCollegeId = searchParams.get("collegeId");
+  const [college, setCollege] = useState<any>(null); // The college object
   const [selectedProgram, setSelectedProgram] = useState("");
-
-  const selectedCollege = colleges.find((c) => c.name === selectedCollegeName);
-
-  useEffect(() => {
-    // Reset selected program when college changes
-    setSelectedProgram("");
-  }, [selectedCollegeName]);
 
   const [formData, setFormData] = useState<any>({
     // Step 1
@@ -76,18 +33,11 @@ export default function ApplicationFormPage() {
     institute: "",
     department: "",
     admission: "",
-    studyLevel: "",
     firstName: "",
     fatherName: "",
     gFatherName: "",
     sex: "",
     dob: "",
-    religion: "",
-    ethnic: "",
-    nationality: "Ethiopian",
-    maritalStatus: "",
-    language1: "",
-    language2: "",
 
     // Step 2
     region: "",
@@ -95,8 +45,6 @@ export default function ApplicationFormPage() {
     woreda: "",
     studentPhone: "",
     studentEmail: "",
-    isHandicapped: "No",
-    handicapType: "",
 
     // Step 3 - EDUCATIONAL INFORMATION
     enrolledBefore: "No", // "Yes" or "No"
@@ -121,25 +69,78 @@ export default function ApplicationFormPage() {
     signed: false,
     studentPhoto: null,
     educationDocs: {
-      degree: null,
       diploma: null,
       highSchoolTranscript: null,
       grade12th: null,
+      grade10th: null,
+      grade8th: null,
     },
     // Step 6
     status: "pending",
   });
+
+  // Effect to fetch the college data and update the form state
+  useEffect(() => {
+    if (!selectedCollegeId) {
+      console.error("No college ID found in the URL");
+      return;
+    }
+
+    // Fetch college data by ID
+    async function fetchCollegeData() {
+      try {
+        const res = await fetch(
+          `/api/admission/postgraduate/colleges/${selectedCollegeId}`
+        );
+        if (!res.ok) {
+          console.error("Failed to fetch college data:", res.statusText);
+          return;
+        }
+        const collegeData = await res.json();
+
+        // Update the college data and set it in state
+        setCollege(collegeData);
+
+        // Set the college name in the formData (institute)
+        setFormData((prev: any) => ({
+          ...prev,
+          institute: collegeData.name, // Save the college name here
+        }));
+      } catch (error) {
+        console.error("Error fetching college data:", error);
+      }
+    }
+
+    fetchCollegeData();
+  }, [selectedCollegeId]); // Run when selectedCollegeId changes
+
+  // Effect to handle department change and update form data
+  useEffect(() => {
+    // Reset the selected program when college changes (to ensure fresh start)
+    if (college) {
+      setSelectedProgram("");
+      setFormData((prev: any) => ({
+        ...prev,
+        department: "", // Reset department when college changes
+      }));
+    }
+  }, [college]); // Runs whenever `college` changes
+
+  const handleProgramChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedDepartment = e.target.value;
+    setSelectedProgram(selectedDepartment);
+    setFormData((prev) => ({
+      ...prev,
+      department: selectedDepartment,
+    }));
+  };
 
   // Validation functions
 
   const validateStep0 = () => {
     const newErrors: { [key: string]: string } = {};
     // First Step
-    // if (!formData.institute) newErrors.institute = "Institute is required.";
-    // if (!formData.department) newErrors.department = "Department is required.";
-    // if (!formData.admission)
-    // newErrors.admission = "Admission type is required.";
-    // if (!formData.studyLevel) newErrors.studyLevel = "Study level is required.";
+    if (!formData.department) newErrors.department = "Department is required.";
     if (!formData.firstName) newErrors.firstName = "First name is required.";
     if (!formData.fatherName) newErrors.fatherName = "Father name is required.";
     if (!formData.gFatherName)
@@ -185,67 +186,18 @@ export default function ApplicationFormPage() {
     const newErrors: { [key: string]: string } = {};
     // Declaration
     if (!formData.signed) newErrors.signed = "Signature is required.";
-    // Uploaded files
+
+    // // Uploaded files
     if (!formData.studentPhoto)
       newErrors.studentPhoto = "Student photo is required.";
-    if (!formData.educationDocs.degree)
-      newErrors.degree = "Degree document is required.";
-    if (!formData.educationDocs.highSchoolTranscript)
-      newErrors.highSchoolTranscript = "High school transcript is required.";
-    if (!formData.educationDocs.grade12result)
-      newErrors.grade12result = "Grade 12th is required.";
+
+    // if (!formData.grade10th)
+    //   newErrors.grade10th = "Student photo is required.";
+    // if (!formData.grade8th)
+    //   newErrors.grade8th = "Student photo is required.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  //   Generate Ethiopian Year Suffix
-  const getEthiopianYearSuffix = (): string => {
-    const date = new Date();
-    const gYear = date.getFullYear();
-    const gMonth = date.getMonth() + 1;
-    const ethYear =
-      gMonth < 9 || (gMonth === 9 && date.getDate() < 11)
-        ? gYear - 8
-        : gYear - 7;
-    return String(ethYear).slice(-2);
-  };
-
-  // Generate Student ID
-  const generateStudentID = async (admissionType: string): Promise<string> => {
-    const prefixMap: Record<string, string> = {
-      "Regular – Full Time": "R",
-      "Extension – Weekend": "WJ",
-      "Extension – Night": "EV",
-      Distance: "D",
-      Summer: "S",
-    };
-
-    const prefix = prefixMap[admissionType] || "X";
-    const yearSuffix = getEthiopianYearSuffix();
-
-    // Fetch all existing students whose IDs start with this prefix and yearSuffix
-    const studentsRef = ref(rtdb, `students`);
-    const snapshot = await get(studentsRef);
-
-    // Find all student IDs matching the pattern (e.g., R_XXXX_17)
-    let nextNumber = 1;
-    if (snapshot.exists()) {
-      const students = snapshot.val() || {};
-      const regex = new RegExp(`^${prefix}_(\\d{4})_${yearSuffix}$`);
-      const matchingIDs = Object.keys(students)
-        .map((id) => {
-          const match = id.match(regex);
-          return match ? parseInt(match[1], 10) : null;
-        })
-        .filter((n) => n !== null) as number[];
-      if (matchingIDs.length > 0) {
-        nextNumber = Math.max(...matchingIDs) + 1;
-      }
-    }
-
-    const paddedID = String(nextNumber).padStart(4, "0");
-    return `${prefix}/${paddedID}/${yearSuffix}`;
   };
 
   // Generate Password
@@ -263,13 +215,7 @@ export default function ApplicationFormPage() {
     >
   ) => {
     const { name, value, type, checked, files } = e.target;
-    if (name === "institute") {
-      setSelectedInstitute(value);
-      setFormData((prev) => ({
-        ...prev,
-        department: "", // reset department on institute change
-      }));
-    }
+
     // Remove error as user types
     setErrors((prev) => {
       const newErrors = { ...prev };
@@ -283,15 +229,6 @@ export default function ApplicationFormPage() {
       setFormData((prev) => ({ ...prev, [name]: files?.[0] || null }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-
-    if (name === "admission") {
-      const studentID = generateStudentID(value);
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-        studentID,
-      }));
     }
   };
 
@@ -307,88 +244,46 @@ export default function ApplicationFormPage() {
 
   const back = () => setStep((prev) => Math.max(prev - 1, 0));
 
-  // Generate Ethiopian Year for the Academic Year
-  // This function calculates the Ethiopian year based on the current date.
-  const EthioYYYY = (): string => {
-    const date = new Date();
-    const gYear = date.getFullYear();
-    const gMonth = date.getMonth() + 1;
-    const ethYear =
-      gMonth < 9 || (gMonth === 9 && date.getDate() < 11)
-        ? gYear - 8
-        : gYear - 7;
-    return String(ethYear);
-  };
-
   //   Submit the form
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const password = generatePassword();
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    if (!formData.admission) {
-      alert("Admission type is required to generate Student ID.");
-      return;
-    }
-
-    const uniqueID = await generateStudentID(formData.admission);
+    setIsSubmitting(true);
 
     try {
-      // ✅ Save student form data to Realtime DB
-      const safeID = uniqueID.replace(/\//g, "_");
-      const AcYear = EthioYYYY();
-      await set(
-        ref(
-          rtdb,
-          `Post-Graduate-Admission/${formData.institute}/${formData.department}/${AcYear}/${safeID}`
-        ),
-        {
-          ...formData,
-          createdAt: new Date().toISOString(),
-          studentID: uniqueID,
-        }
-      );
-      // ✅ Save student ID to Realtime DB to avoid duplicates
-      await set(ref(rtdb, `students/${safeID}`), {
-        createdAt: new Date().toISOString(),
-        studentID: uniqueID,
-      });
-      // ✅ Save login credentials to Firestore
-      await addDoc(collection(db, "users"), {
-        username: uniqueID,
-        password: hashedPassword,
-        role: "student",
-        email: formData.email,
-        name: `${formData.firstName} ${formData.fatherName}`,
-        studentID: uniqueID,
-        institute: formData.institute,
-        department: formData.department,
-        academicYear: EthioYYYY(), // custom function from your code
+      // Upload files
+      const form = new FormData();
+      form.append("studentPhoto", formData.studentPhoto);
+      Object.entries(formData.educationDocs).forEach(([key, file]) => {
+        if (file) form.append(key, file);
       });
 
-      // send username and password to the user's email
-      await fetch("/api/send-credentials", {
+      const uploadRes = await fetch("/api/upload", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        body: form,
+      });
+      const { uploaded } = await uploadRes.json();
+
+      // Generate password
+      const password = generatePassword();
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Send all form data (no studentID generation here)
+      await fetch("/api/submit-application/post-apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: formData.email,
-          username: uniqueID,
-          password,
-          name: `${formData.firstName} ${formData.fatherName}`,
+          ...formData,
+          password: hashedPassword,
+          uploadedFiles: uploaded,
         }),
       });
 
-      alert(
-        `Student registered!\nUsername: ${uniqueID}\nPassword: ${password}`
-      );
-      console.log("Submitting form data:", formData);
       router.push("/admission/success");
-    } catch (err) {
-      console.error("Submission failed:", err);
-      alert("Failed to submit. See console for details.");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -397,6 +292,38 @@ export default function ApplicationFormPage() {
       <h2 className="text-2xl font-bold text-blue-600 mb-6 text-center ">
         Student Application Form
       </h2>
+
+      {/* Submit Loading */}
+
+      {isSubmitting && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg flex items-center gap-2 shadow">
+            <svg
+              className="animate-spin h-6 w-6 text-blue-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+            <span className="text-blue-600 font-medium">
+              Submitting your application, please wait...
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Modal */}
 
@@ -420,12 +347,12 @@ export default function ApplicationFormPage() {
               <input
                 type="email"
                 name="email"
-                value={formData.email}
+                value={formData.studentEmail}
                 onChange={handleChange}
                 className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
                 placeholder="Enter your email"
               />
-              {!formData.email && (
+              {!formData.studentEmail && (
                 <p className="text-red-500 text-sm mt-1">Email is required.</p>
               )}
             </div>
@@ -439,7 +366,7 @@ export default function ApplicationFormPage() {
               </button>
               <button
                 onClick={(e) => {
-                  if (!formData.email) return; // Prevent submit if email is empty
+                  if (!formData.studentEmail) return; // Prevent submit if email is empty
                   setShowConfirmModal(false);
                   handleSubmit(e as any);
                 }}
@@ -459,7 +386,6 @@ export default function ApplicationFormPage() {
             <h2 className=" font-bold text-blue-600 mb-6">
               1. Institute and Department Information
             </h2>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Department */}
               <div>
@@ -467,32 +393,64 @@ export default function ApplicationFormPage() {
                   Department / Field of Study{" "}
                   <span className="text-red-500">*</span>
                 </label>
-                {!selectedCollege ? (
-                  <p className="text-red-500">
-                    Invalid college selected. Please go back and try again.
+                {!college ? (
+                  <p className="text-blue-500">
+                    Loading Available Department...
                   </p>
                 ) : (
                   <>
                     <select
                       className="w-full p-3 border border-blue-300 rounded mb-6"
                       value={selectedProgram}
-                      onChange={(e) => setSelectedProgram(e.target.value)}
+                      onChange={handleProgramChange}
                     >
                       <option value="" disabled>
                         -- Choose a department --
                       </option>
-                      {selectedCollege.programs.map((program, idx) => (
+                      {college.programs.map((program: any, idx: number) => (
                         <option key={idx} value={program.name}>
                           {program.name}
                         </option>
                       ))}
                     </select>
+                    {selectedProgram && (
+                      <p className="text-blue-500">
+                        Selected Program: {selectedProgram}
+                      </p>
+                    )}
                   </>
+                )}
+              </div>
+
+              <div>
+                <label className="block mb-2 text-gray-700 font-semibold">
+                  Admission Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="admission"
+                  value={formData.admission}
+                  onChange={handleChange}
+                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  <option value="" className="text-blue-200">
+                    Select Admission Type
+                  </option>
+                  <option value="Regular">Regular</option>
+                  <option value="Extension – Weekend">
+                    Extension – Weekend
+                  </option>
+                  <option value="Summer">Summer</option>
+                </select>
+                {errors.admission && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.admission}
+                  </p>
                 )}
               </div>
             </div>
 
             {/* Personal Information */}
+
             <h2 className=" font-bold text-blue-600 mb-6">
               1.1. Personal Information
             </h2>
@@ -856,74 +814,78 @@ export default function ApplicationFormPage() {
                   <option value="Other">Other</option>
                 </select>
               </div>
-              {/* Sponsor Name (only if Other) */}
-              {formData.sponsor === "Other" && (
-                <div>
-                  <label className="block mb-2 text-gray-700 font-semibold">
-                    Organization Name
-                  </label>
-                  <input
-                    name="sponsorName"
-                    placeholder="Organization Name"
-                    onChange={handleChange}
-                    value={formData.sponsorName}
-                    className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                  />
-                </div>
+              {/* Show sponsor fields only if not Self and not empty */}
+              {formData.sponsor && formData.sponsor !== "Self" && (
+                <>
+                  {/* Sponsor Name (only if Other) */}
+                  {formData.sponsor === "Other" && (
+                    <div>
+                      <label className="block mb-2 text-gray-700 font-semibold">
+                        Organization Name
+                      </label>
+                      <input
+                        name="sponsorName"
+                        placeholder="Organization Name"
+                        onChange={handleChange}
+                        value={formData.sponsorName}
+                        className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                      />
+                    </div>
+                  )}
+                  {/* Sponsor Region */}
+                  <div>
+                    <label className="block mb-2 text-gray-700 font-semibold">
+                      Sponsor Region
+                    </label>
+                    <input
+                      name="sponsorRegion"
+                      placeholder="Sponsor Region"
+                      onChange={handleChange}
+                      value={formData.sponsorRegion}
+                      className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                    />
+                  </div>
+                  {/* Sponsor Zone */}
+                  <div>
+                    <label className="block mb-2 text-gray-700 font-semibold">
+                      Sponsor Zone
+                    </label>
+                    <input
+                      name="sponsorZone"
+                      placeholder="Sponsor Zone"
+                      onChange={handleChange}
+                      value={formData.sponsorZone}
+                      className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                    />
+                  </div>
+                  {/* Sponsor Email */}
+                  <div>
+                    <label className="block mb-2 text-gray-700 font-semibold">
+                      Sponsor Email
+                    </label>
+                    <input
+                      name="sponsorEmail"
+                      placeholder="Sponsor Email"
+                      onChange={handleChange}
+                      value={formData.sponsorEmail}
+                      className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                    />
+                  </div>
+                  {/* Sponsor URL */}
+                  <div>
+                    <label className="block mb-2 text-gray-700 font-semibold">
+                      Sponsor Website (URL)
+                    </label>
+                    <input
+                      name="sponsorURL"
+                      placeholder="Sponsor Website"
+                      onChange={handleChange}
+                      value={formData.sponsorURL}
+                      className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                    />
+                  </div>
+                </>
               )}
-              {/* Sponsor Region */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Sponsor Region
-                </label>
-                <input
-                  name="sponsorRegion"
-                  placeholder="Sponsor Region"
-                  onChange={handleChange}
-                  value={formData.sponsorRegion}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-              </div>
-              {/* Sponsor Zone */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Sponsor Zone
-                </label>
-                <input
-                  name="sponsorZone"
-                  placeholder="Sponsor Zone"
-                  onChange={handleChange}
-                  value={formData.sponsorZone}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-              </div>
-
-              {/* Sponsor Email */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Sponsor Email
-                </label>
-                <input
-                  name="sponsorEmail"
-                  placeholder="Sponsor Email"
-                  onChange={handleChange}
-                  value={formData.sponsorEmail}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-              </div>
-              {/* Sponsor URL */}
-              <div>
-                <label className="block mb-2 text-gray-700 font-semibold">
-                  Sponsor Website (URL)
-                </label>
-                <input
-                  name="sponsorURL"
-                  placeholder="Sponsor Website"
-                  onChange={handleChange}
-                  value={formData.sponsorURL}
-                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
-                />
-              </div>
             </div>
           </>
         )}
@@ -1004,40 +966,6 @@ export default function ApplicationFormPage() {
                 <div className="space-y-2">
                   <div>
                     <label className="block text-gray-600 text-sm mb-1">
-                      Degree <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      name="degree"
-                      onChange={(e) => {
-                        setFormData((prev: any) => ({
-                          ...prev,
-                          educationDocs: {
-                            ...prev.educationDocs,
-                            degree: e.target.files?.[0] || null,
-                          },
-                        }));
-                        setErrors((prev) => {
-                          const newErrors = { ...prev };
-                          delete newErrors.degree;
-                          return newErrors;
-                        });
-                      }}
-                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
-                    />
-                    {formData.educationDocs?.degree && (
-                      <span className="text-green-600 text-xs">
-                        Selected: {formData.educationDocs.degree.name}
-                      </span>
-                    )}
-                    {errors.degree && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.degree}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-600 text-sm mb-1">
                       Diploma (if any)
                     </label>
                     <input
@@ -1059,11 +987,39 @@ export default function ApplicationFormPage() {
                         Selected: {formData.educationDocs.diploma.name}
                       </span>
                     )}
+                  </div>{" "}
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">
+                      12th Grade Certificate
+                    </label>
+                    <input
+                      type="file"
+                      name="grade12result"
+                      onChange={(e) => {
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          educationDocs: {
+                            ...prev.educationDocs,
+                            grade12result: e.target.files?.[0] || null,
+                          },
+                        }));
+                        setErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.grade12result;
+                          return newErrors;
+                        });
+                      }}
+                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
+                    />
+                    {formData.educationDocs?.grade12result && (
+                      <span className="text-green-600 text-xs">
+                        Selected: {formData.educationDocs.grade12result.name}
+                      </span>
+                    )}
                   </div>
                   <div>
                     <label className="block text-gray-600 text-sm mb-1">
-                      High School Transcript{" "}
-                      <span className="text-red-500">*</span>
+                      High School Transcript
                     </label>
                     <input
                       type="file"
@@ -1090,44 +1046,74 @@ export default function ApplicationFormPage() {
                         {formData.educationDocs.highSchoolTranscript.name}
                       </span>
                     )}
-                    {errors.highSchoolTranscript && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.highSchoolTranscript}
-                      </p>
-                    )}
                   </div>
                   <div>
                     <label className="block text-gray-600 text-sm mb-1">
-                      12th Grade Certificate
+                      10th Grade Certificate
                       <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="file"
-                      name="grade12result"
+                      name="grade10result"
                       onChange={(e) => {
                         setFormData((prev: any) => ({
                           ...prev,
                           educationDocs: {
                             ...prev.educationDocs,
-                            grade12result: e.target.files?.[0] || null,
+                            grade10result: e.target.files?.[0] || null,
                           },
                         }));
                         setErrors((prev) => {
                           const newErrors = { ...prev };
-                          delete newErrors.grade12result;
+                          delete newErrors.grade10result;
                           return newErrors;
                         });
                       }}
                       className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
                     />
-                    {formData.educationDocs?.grade12result && (
+                    {formData.educationDocs?.grade10result && (
                       <span className="text-green-600 text-xs">
-                        Selected: {formData.educationDocs.grade12result.name}
+                        Selected: {formData.educationDocs.grade10result.name}
                       </span>
                     )}
-                    {errors.grade12result && (
+                    {errors.grade10result && (
                       <p className="text-red-500 text-sm mt-1">
-                        {errors.grade12result}
+                        {errors.grade10result}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">
+                      8th Grade Certificate
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="file"
+                      name="grade8result"
+                      onChange={(e) => {
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          educationDocs: {
+                            ...prev.educationDocs,
+                            grade8result: e.target.files?.[0] || null,
+                          },
+                        }));
+                        setErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.grade8result;
+                          return newErrors;
+                        });
+                      }}
+                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
+                    />
+                    {formData.educationDocs?.grade8result && (
+                      <span className="text-green-600 text-xs">
+                        Selected: {formData.educationDocs.grade8result.name}
+                      </span>
+                    )}
+                    {errors.grade8result && (
+                      <p className="text  -red-500 text-sm mt-1">
+                        {errors.grade8result}
                       </p>
                     )}
                   </div>
@@ -1168,11 +1154,11 @@ export default function ApplicationFormPage() {
             Back
           </button>
 
-          {step === steps.length - 1 ? (
+          {step === 1 ? (
             <button
               type="button"
               onClick={() => {
-                if (!validateStep4()) return; // Validate before submission
+                if (!validateStep1()) return; // Validate before submission
                 setShowConfirmModal(true);
               }}
               className="px-6 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold"
