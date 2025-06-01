@@ -32,6 +32,7 @@ const generateStudentID = async (): Promise<string> => {
   const yearSuffix = getEthiopianYearSuffix();
   const idPrefix = `JJU${yearSuffix}AD-UG`;
 
+  // Check for existing IDs in studentApplicationPostGraduate
   const existingStudents = await prisma.studentApplication.findMany({
     where: {
       studentID: {
@@ -43,14 +44,33 @@ const generateStudentID = async (): Promise<string> => {
     },
   });
 
-  const existingNumbers = existingStudents
-    .map((s) => {
-      const match = s.studentID.match(new RegExp(`^${idPrefix}(\\d{4})$`));
+  // Also check for existing IDs in user table
+  const existingUsers = await prisma.user.findMany({
+    where: {
+      username: {
+        startsWith: idPrefix,
+      },
+    },
+    select: {
+      username: true,
+    },
+  });
+
+  // Combine IDs from both tables
+  const existingIDs = [
+    ...existingStudents.map((s) => s.studentID),
+    ...existingUsers.map((u) => u.username),
+  ];
+
+  const existingNumbers = existingIDs
+    .map((id) => {
+      const match = id.match(new RegExp(`^${idPrefix}(\\d{4})$`));
       return match ? parseInt(match[1], 10) : null;
     })
     .filter((n): n is number => n !== null);
 
-  const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+  const nextNumber =
+    existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
   const paddedNumber = String(nextNumber).padStart(4, "0");
 
   return `${idPrefix}${paddedNumber}`;

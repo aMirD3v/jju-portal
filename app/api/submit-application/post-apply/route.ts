@@ -29,22 +29,39 @@ const generateStudentID = async (): Promise<string> => {
   const yearSuffix = getEthiopianYearSuffix();
   const idPrefix = `JJU${yearSuffix}AD-PG`;
 
-  const existingStudents = await prisma.studentApplicationPostGraduate.findMany(
-    {
-      where: {
-        studentID: {
-          startsWith: idPrefix,
-        },
+  // Check for existing IDs in studentApplicationPostGraduate
+  const existingStudents = await prisma.studentApplicationPostGraduate.findMany({
+    where: {
+      studentID: {
+        startsWith: idPrefix,
       },
-      select: {
-        studentID: true,
-      },
-    }
-  );
+    },
+    select: {
+      studentID: true,
+    },
+  });
 
-  const existingNumbers = existingStudents
-    .map((s) => {
-      const match = s.studentID.match(new RegExp(`^${idPrefix}(\\d{4})$`));
+  // Also check for existing IDs in user table
+  const existingUsers = await prisma.user.findMany({
+    where: {
+      username: {
+        startsWith: idPrefix,
+      },
+    },
+    select: {
+      username: true,
+    },
+  });
+
+  // Combine IDs from both tables
+  const existingIDs = [
+    ...existingStudents.map((s) => s.studentID),
+    ...existingUsers.map((u) => u.username),
+  ];
+
+  const existingNumbers = existingIDs
+    .map((id) => {
+      const match = id.match(new RegExp(`^${idPrefix}(\\d{4})$`));
       return match ? parseInt(match[1], 10) : null;
     })
     .filter((n): n is number => n !== null);
@@ -56,17 +73,21 @@ const generateStudentID = async (): Promise<string> => {
   return `${idPrefix}${paddedNumber}`;
 };
 
+
 export async function POST(req: Request) {
   try {
     const data = await req.json();
 
     const {
+      ngatcode,
       password,
       postSecondaryEducation,
       uploadedFiles,
       dob,
       email,
       studentPhoto, // ❌ not saved
+      ngatCertificate,
+      degree,
       educationDocs, // ❌ not saved
       ...student
     } = data;
@@ -90,10 +111,10 @@ export async function POST(req: Request) {
         academicYear: String(academicYear), // 💡 Save as string or number
         dob: dobFormatted,
         studentPhotoUrl: uploadedFiles?.studentPhoto || null,
+        ngatCertificateUrl: uploadedFiles?.ngatCertificate || null,
+        digreeUrl: uploadedFiles?.degree || null,
         diplomaUrl: uploadedFiles?.diploma || null,
         grade12Url: uploadedFiles?.grade12result || null,
-        grade10Url: uploadedFiles?.grade10result || null,
-        grade8Url: uploadedFiles?.grade8result || null,
         highSchoolUrl: uploadedFiles?.highSchoolTranscript || null,
         postSecondary: {
           create: postSecondaryEducation,
@@ -132,7 +153,7 @@ Your student account has been created.
 Username: ${studentID}
 Password: ${password}
 
-Please change your password after logging in.
+   Please use the username and password to login to the portal
 
 Thanks!`,
     };

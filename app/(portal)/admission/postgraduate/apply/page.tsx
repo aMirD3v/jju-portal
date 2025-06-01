@@ -33,6 +33,7 @@ export default function ApplicationFormPage() {
     institute: "",
     department: "",
     admission: "",
+    ngatcode: "",
     firstName: "",
     fatherName: "",
     gFatherName: "",
@@ -69,11 +70,11 @@ export default function ApplicationFormPage() {
     signed: false,
     studentPhoto: null,
     educationDocs: {
+      ngatCertificate: null,
+      degree: null,
       diploma: null,
       highSchoolTranscript: null,
       grade12th: null,
-      grade10th: null,
-      grade8th: null,
     },
     // Step 6
     status: "pending",
@@ -147,6 +148,7 @@ export default function ApplicationFormPage() {
       newErrors.gFatherName = "Grandfather name is required.";
     if (!formData.sex) newErrors.sex = "Gender is required.";
     if (!formData.dob) newErrors.dob = "Date of birth is required.";
+    if (!formData.ngatcode) newErrors.ngatcode = "NGAT Code is required.";
 
     if (!formData.studentPhone)
       newErrors.studentPhone = "Student phone number is required.";
@@ -191,10 +193,13 @@ export default function ApplicationFormPage() {
     if (!formData.studentPhoto)
       newErrors.studentPhoto = "Student photo is required.";
 
-    // if (!formData.grade10th)
-    //   newErrors.grade10th = "Student photo is required.";
-    // if (!formData.grade8th)
-    //   newErrors.grade8th = "Student photo is required.";
+    // what happen this validation is not working and if i add it will not continue to next step
+    
+
+    // if (!formData.educationDocs.ngatCertificate)
+    //   newErrors.ngatCertificate = "NGAT certificate is required.";
+    // if (!formData.educationDocs.degree)
+    //   newErrors.degree = "Degree certificate is required.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -347,7 +352,7 @@ export default function ApplicationFormPage() {
               <input
                 type="email"
                 name="email"
-                value={formData.studentEmail}
+                value={formData.studentEmail || ""}
                 onChange={handleChange}
                 className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
                 placeholder="Enter your email"
@@ -420,6 +425,11 @@ export default function ApplicationFormPage() {
                     )}
                   </>
                 )}
+                {errors.department && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.department}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -445,6 +455,21 @@ export default function ApplicationFormPage() {
                   <p className="text-red-500 text-sm mt-1">
                     {errors.admission}
                   </p>
+                )}
+              </div>
+              <div>
+                <label className="block mb-2 text-gray-700 font-semibold">
+                  NGAT Code<span className="text-red-500">*</span>
+                </label>
+                <input
+                  name="ngatcode"
+                  placeholder="Enter your NGAT Code"
+                  onChange={handleChange}
+                  value={formData.ngatcode}
+                  className="w-full p-3 rounded-lg border-2 border-blue-300 text-gray-700"
+                />
+                {errors.ngatcode && (
+                  <p className="text-red-500 text-sm mt-1">{errors.ngatcode}</p>
                 )}
               </div>
             </div>
@@ -966,6 +991,76 @@ export default function ApplicationFormPage() {
                 <div className="space-y-2">
                   <div>
                     <label className="block text-gray-600 text-sm mb-1">
+                      National Graduate Admission Test (NGAT) Certificate
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="file"
+                      name="ngatCertificate"
+                      onChange={(e) => {
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          educationDocs: {
+                            ...prev.educationDocs,
+                            ngatCertificate: e.target.files?.[0] || null,
+                          },
+                        }));
+                        setErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.ngatCertificate;
+                          return newErrors;
+                        });
+                      }}
+                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
+                    />
+                    {formData.educationDocs?.ngatCertificate && (
+                      <span className="text-green-600 text-xs">
+                        Selected: {formData.educationDocs.ngatCertificate.name}
+                      </span>
+                    )}
+                    {errors.ngatCertificate && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.ngatCertificate}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">
+                      Degree
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="file"
+                      name="degree"
+                      onChange={(e) => {
+                        setFormData((prev: any) => ({
+                          ...prev,
+                          educationDocs: {
+                            ...prev.educationDocs,
+                            degree: e.target.files?.[0] || null,
+                          },
+                        }));
+                        setErrors((prev) => {
+                          const newErrors = { ...prev };
+                          delete newErrors.degree;
+                          return newErrors;
+                        });
+                      }}
+                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
+                    />
+                    {formData.educationDocs?.degree && (
+                      <span className="text-green-600 text-xs">
+                        Selected: {formData.educationDocs.degree.name}
+                      </span>
+                    )}
+                    {errors.degree && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.degree}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-gray-600 text-sm mb-1">
                       Diploma (if any)
                     </label>
                     <input
@@ -1045,76 +1140,6 @@ export default function ApplicationFormPage() {
                         Selected:{" "}
                         {formData.educationDocs.highSchoolTranscript.name}
                       </span>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-600 text-sm mb-1">
-                      10th Grade Certificate
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      name="grade10result"
-                      onChange={(e) => {
-                        setFormData((prev: any) => ({
-                          ...prev,
-                          educationDocs: {
-                            ...prev.educationDocs,
-                            grade10result: e.target.files?.[0] || null,
-                          },
-                        }));
-                        setErrors((prev) => {
-                          const newErrors = { ...prev };
-                          delete newErrors.grade10result;
-                          return newErrors;
-                        });
-                      }}
-                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
-                    />
-                    {formData.educationDocs?.grade10result && (
-                      <span className="text-green-600 text-xs">
-                        Selected: {formData.educationDocs.grade10result.name}
-                      </span>
-                    )}
-                    {errors.grade10result && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.grade10result}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-gray-600 text-sm mb-1">
-                      8th Grade Certificate
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="file"
-                      name="grade8result"
-                      onChange={(e) => {
-                        setFormData((prev: any) => ({
-                          ...prev,
-                          educationDocs: {
-                            ...prev.educationDocs,
-                            grade8result: e.target.files?.[0] || null,
-                          },
-                        }));
-                        setErrors((prev) => {
-                          const newErrors = { ...prev };
-                          delete newErrors.grade8result;
-                          return newErrors;
-                        });
-                      }}
-                      className="w-full p-2 rounded-lg border-2 border-blue-200 text-gray-700 bg-white"
-                    />
-                    {formData.educationDocs?.grade8result && (
-                      <span className="text-green-600 text-xs">
-                        Selected: {formData.educationDocs.grade8result.name}
-                      </span>
-                    )}
-                    {errors.grade8result && (
-                      <p className="text  -red-500 text-sm mt-1">
-                        {errors.grade8result}
-                      </p>
                     )}
                   </div>
                 </div>

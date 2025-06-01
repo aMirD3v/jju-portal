@@ -131,6 +131,7 @@ model StudentApplicationPostGraduate {
   institute           String
   department          String
   admission           String
+  ngatcode            String?
   firstName           String
   fatherName          String
   gFatherName         String
@@ -156,12 +157,13 @@ model StudentApplicationPostGraduate {
   sponsorURL          String?
 
   signed              Boolean
-  studentPhotoUrl     String? // File uploads handled via cloud storage
+  studentPhotoUrl     String? 
+
+  ngatCertificateUrl String?
+  digreeUrl          String?
   diplomaUrl          String?
   highSchoolUrl       String?
   grade12Url          String?
-  grade10Url          String?
-  grade8Url           String?
   
   status              String
   rejectionReason     String?
