@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "All fields are required" }, { status: 400 });
   }
 
-  const program = await prisma.program.create({
+  const program = await prisma.programPostGraduate.create({
     data: { name, year, collegeId },
   });
 
