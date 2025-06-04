@@ -2,11 +2,16 @@
 
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { UserIcon, LockClosedIcon } from "@heroicons/react/24/solid";
 
-export default function LoginPage() {
+export default function LoginPage({
+  onResetPassword,
+}: {
+  onResetPassword: () => void;
+}) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,107 +24,115 @@ export default function LoginPage() {
   };
 
   const handleLogin = async () => {
-    setLoading(true);
     if (!username || !password) {
       toast.error("Please enter both username and password.");
       return;
     }
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      username,
-      password,
-    });
+    setLoading(true);
 
-    if (res?.ok) {
-      const session = await getSession();
-      const role = session?.user?.role;
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        username,
+        password,
+      });
 
-      if (role === "admin") router.push("/dashboard/admin");
-      else if (role === "staff") router.push("/dashboard/staff");
-      else if (role === "student") router.push("/dashboard/student");
-      else router.push("/unauthorized");
-    } else {
-      if (res?.error === "CredentialsSignin") {
-        setLoading(false);
-        toast.error("Invalid username or password.");
-      } else if (res?.error === "UserNotFound") {
-        setLoading(false);
-        toast.error("User not found.");
+      if (res?.ok) {
+        const session = await getSession();
+        const role = session?.user?.role;
+
+        toast.success("Login successful!");
+
+        if (role === "admin") router.push("/dashboard/admin");
+        else if (role === "staff") router.push("/dashboard/staff");
+        else if (role === "student") router.push("/dashboard/student");
+        else router.push("/unauthorized");
       } else {
-        setLoading(false);
-        toast.error("Something went wrong. Please try again.");
+        switch (res?.error) {
+          case "CredentialsSignin":
+            toast.error("Invalid username or password.");
+            break;
+          case "UserNotFound":
+            toast.error("User not found.");
+            break;
+          default:
+            toast.error("Something went wrong. Please try again.");
+        }
       }
+    } catch (error) {
+      console.error(error);
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className=" bg-white backdrop-blur-lg shadow-xl p-8 h-full rounded-lg flex flex-col justify-center">
+    <div className="bg-white backdrop-blur-lg shadow-xl p-8 h-full rounded-lg flex flex-col justify-center space-y-6">
       <Image
         src="/jju-logo.png"
         alt="Logo"
-        width={100}
-        height={100}
-        className="cursor-pointer self-center "
+        width={1000}
+        height={1000}
+        className="cursor-pointer self-center w-24 h-28"
       />
-      <h2 className="text-3xl font-semibold text-blue-500 mb-6">Login</h2>
-      <div>
-        <label htmlFor="username" className="block text-blue-500 mb-1">
-          Username
-        </label>
-        <input
-          id="username"
-          name="username"
-          type="username"
-          autoCorrect="off"
-          autoCapitalize="none"
-          spellCheck="false"
-          placeholder="Enter your username"
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          className="w-full p-3 rounded-lg border-2 border-blue-300 text-blue-400 placeholder-blue-200 placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
+      <h2 className="text-3xl font-semibold text-blue-500">Login</h2>
+
+      {/* Username */}
+      <div className="relative">
+        <label htmlFor="username" className="block text-blue-500 mb-1">Username</label>
+        <div className="flex items-center border-2 border-blue-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-400">
+          <UserIcon className="h-5 w-5 text-blue-400 ml-3" />
+          <input
+            id="username"
+            type="text"
+            placeholder="Enter your username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="flex-1 p-3 rounded-lg text-blue-400 placeholder-blue-200 focus:outline-none bg-transparent"
+          />
+        </div>
       </div>
-      <div>
-        <label htmlFor="password" className="block text-blue-500 mb-1">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          placeholder="Enter your password"
-          className="w-full p-3 rounded-lg border-2 border-blue-300 text-blue-400 placeholder-blue-200 placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={handleKeyDown}
-          autoComplete="current-password"
-          autoCorrect="off"
-          autoCapitalize="none"
-          spellCheck="false"
-        />
+
+      {/* Password */}
+      <div className="relative">
+        <label htmlFor="password" className="block text-blue-500 mb-1">Password</label>
+        <div className="flex items-center border-2 border-blue-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-400">
+          <LockClosedIcon className="h-5 w-5 text-blue-400 ml-3" />
+          <input
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="flex-1 p-3 rounded-lg text-blue-400 placeholder-blue-200 focus:outline-none bg-transparent"
+          />
+        </div>
       </div>
+
       <button
-        type="submit"
-        className="w-full py-3 rounded-lg mt-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold transition-all"
         onClick={handleLogin}
+        disabled={loading}
+        className="w-full py-3 rounded-lg mt-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold transition-all flex justify-center items-center disabled:opacity-50"
       >
         {loading ? (
-          <div className=" inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-            <div
-              className="
-            w-6 h-6
-            border-4 border-white
-            border-t-transparent
-            rounded-full
-            animate-spin
-          "
-            />
-          </div>
+          <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
           "Login"
         )}
       </button>
+
+      <div className="text-center text-sm text-gray-400">
+        Forgot your password?{" "}
+        <button
+          onClick={onResetPassword}
+          className="text-blue-500 hover:underline"
+        >
+          Reset it
+        </button>
+      </div>
     </div>
   );
 }

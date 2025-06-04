@@ -9,7 +9,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
   }
 
-  const program = await prisma.program.update({
+  const program = await prisma.programPostGraduate.update({
     where: { id },
     data: { name, year },
   });
@@ -24,7 +24,7 @@ export async function DELETE(_: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
   }
 
-  await prisma.program.delete({
+  await prisma.programPostGraduate.delete({
     where: { id },
   });
 
