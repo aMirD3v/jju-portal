@@ -39,6 +39,11 @@ export default function DashboardSidebar() {
                 Manage Applications
               </span>
             </Link>
+            <Link href="/dashboard/admin/placement">
+              <span className={linkClass("/dashboard/admin/placement")}>
+                Manage Placement
+              </span>
+            </Link>
             <Link href="/dashboard/admin/admission">
               <span className={linkClass("/dashboard/admin/admission")}>
                 Manage Admission
@@ -49,6 +54,7 @@ export default function DashboardSidebar() {
                 Manage Users
               </span>
             </Link>
+             
           </> 
         )}
 

@@ -2,14 +2,20 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast"; // 🚀 import the toast
 
 export default function AdmissionManagerPage() {
-  const [tab, setTab] = useState<"undergraduate" | "postgraduate">("undergraduate");
-
+  const [tab, setTab] = useState<"undergraduate" | "postgraduate">(
+    "undergraduate"
+  );
   const [colleges, setColleges] = useState<any[]>([]);
-  const [availableMap, setAvailableMap] = useState<Map<number, Set<number>>>(new Map());
+  const [availableMap, setAvailableMap] = useState<Map<number, Set<number>>>(
+    new Map()
+  );
   const [selectedCollege, setSelectedCollege] = useState<number | null>(null);
-  const [localSelections, setLocalSelections] = useState<Set<number>>(new Set());
+  const [localSelections, setLocalSelections] = useState<Set<number>>(
+    new Set()
+  );
   const [admissionStart, setAdmissionStart] = useState("");
   const [admissionDeadline, setAdmissionDeadline] = useState("");
   const [loading, setLoading] = useState(true);
@@ -45,7 +51,10 @@ export default function AdmissionManagerPage() {
   }, [tab]);
 
   const saveDeadline = async () => {
-    if (!admissionStart || !admissionDeadline) return alert("Fill both dates.");
+    if (!admissionStart || !admissionDeadline) {
+      toast.error("Please fill in both start and deadline dates.");
+      return;
+    }
     await fetch(`/api/admission/${tab}/admission-config`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -54,7 +63,7 @@ export default function AdmissionManagerPage() {
         applicationDeadline: admissionDeadline,
       }),
     });
-    alert("Admission dates updated!");
+    toast.success("Admission dates updated!");
   };
 
   const handleCollegeSelect = (collegeId: number) => {
@@ -66,13 +75,18 @@ export default function AdmissionManagerPage() {
   const handleToggleProgram = (programId: number) => {
     setLocalSelections((prev) => {
       const updated = new Set(prev);
-      updated.has(programId) ? updated.delete(programId) : updated.add(programId);
+      updated.has(programId)
+        ? updated.delete(programId)
+        : updated.add(programId);
       return updated;
     });
   };
 
   const handleSaveAvailability = async () => {
-    if (!selectedCollege) return;
+    if (!selectedCollege) {
+      toast.error("Please select a college first.");
+      return;
+    }
     setSaving(true);
     await fetch(`/api/admission/${tab}/available/manage`, {
       method: "POST",
@@ -86,7 +100,7 @@ export default function AdmissionManagerPage() {
     newMap.set(selectedCollege, new Set(localSelections));
     setAvailableMap(newMap);
     setSaving(false);
-    alert("Availability saved.");
+    toast.success("Program availability saved!");
   };
 
   return (
@@ -138,12 +152,35 @@ export default function AdmissionManagerPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="text-center text-gray-500">Loading data...</div>
+        <div className="flex h-full items-center justify-center py-12">
+          <svg
+            className="animate-spin h-10 w-10 text-blue-500 mb-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+          </svg>
+        </div>
       ) : (
         <>
           {/* Admission Dates */}
           <section className="bg-white rounded shadow p-6 w-fit">
-            <h2 className="text-xl font-semibold text-blue-700 mb-4">📅 Admission Dates</h2>
+            <h2 className="text-xl font-semibold text-blue-700 mb-4">
+              📅 Admission Dates
+            </h2>
             <div className="space-y-3">
               <div className="flex gap-2 items-center">
                 <label className="w-24">Start:</label>
@@ -174,7 +211,9 @@ export default function AdmissionManagerPage() {
 
           {/* Program Availability */}
           <section className="bg-white rounded shadow p-6">
-            <h2 className="text-xl font-semibold text-blue-700 mb-4">📝 Program Availability</h2>
+            <h2 className="text-xl font-semibold text-blue-700 mb-4">
+              📝 Program Availability
+            </h2>
             <div className="grid md:grid-cols-3 gap-4">
               {/* Colleges */}
               <div className="bg-gray-50 rounded p-4">
@@ -202,21 +241,23 @@ export default function AdmissionManagerPage() {
                 {selectedCollege ? (
                   <>
                     <ul className="space-y-1 max-h-64 overflow-auto">
-                      {colleges.find((c) => c.id === selectedCollege)?.programs.map((p: any) => (
-                        <li key={p.id}>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={localSelections.has(p.id)}
-                              onChange={() => handleToggleProgram(p.id)}
-                            />
-                            {p.name}{" "}
-                            <span className="text-sm text-gray-500">
-                              ({p.year} years)
-                            </span>
-                          </label>
-                        </li>
-                      ))}
+                      {colleges
+                        .find((c) => c.id === selectedCollege)
+                        ?.programs.map((p: any) => (
+                          <li key={p.id}>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={localSelections.has(p.id)}
+                                onChange={() => handleToggleProgram(p.id)}
+                              />
+                              {p.name}{" "}
+                              <span className="text-sm text-gray-500">
+                                ({p.year} years)
+                              </span>
+                            </label>
+                          </li>
+                        ))}
                     </ul>
                     <button
                       onClick={handleSaveAvailability}
@@ -227,7 +268,9 @@ export default function AdmissionManagerPage() {
                     </button>
                   </>
                 ) : (
-                  <p className="text-gray-500 italic">Select a college to assign availability.</p>
+                  <p className="text-gray-500 italic">
+                    Select a college to assign availability.
+                  </p>
                 )}
               </div>
             </div>

@@ -3,36 +3,77 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function BiographyStartPage() {
-    const [admissionNumber, setAdmissionNumber] = useState("");
-      const router = useRouter();
+  const [admissionNumber, setAdmissionNumber] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [fatherName, setFatherName] = useState("");
+  const router = useRouter();
 
   const handleNext = () => {
     if (admissionNumber.trim()) {
-      router.push(`/biography/form?adm=${encodeURIComponent(admissionNumber)}`)
+      router.push(`/biography/form?adm=${encodeURIComponent(admissionNumber)}`);
     } else {
-      alert("Please enter your admission number.")
+      alert("Please enter your admission number.");
     }
-  }
-
+  };
 
   return (
-      <div className=" p-6 rounded shadow space-y-4">
-        <h2 className="text-2xl font-semibold text-blue-500 text-center">
-          Enter Admission Number
-        </h2>
-        <input
-          value={admissionNumber}
-          type="number"
-          onChange={(e) => setAdmissionNumber(e.target.value)}
-          placeholder="e.g. Grade 12 Admission Number"
-          className="w-full p-2 border border-blue-500 rounded placeholder-blue-500/40 text-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition duration-300"
-        />
+    <div className="max-w-md mx-auto mt-10 bg-white p-8 rounded-xl shadow-lg">
+      <h2 className="text-2xl font-bold text-blue-600 text-center mb-6">
+        Enter Your Details
+      </h2>
+      <form
+        className="grid grid-cols-1 gap-6"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleNext();
+        }}
+      >
+        <div className="grid grid-cols-1 gap-2">
+          <label htmlFor="firstName" className="text-blue-700 font-medium">
+            First Name
+          </label>
+          <input
+            id="firstName"
+            value={firstName}
+            type="text"
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="Enter your first name"
+            className="p-2 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-2">
+          <label htmlFor="fatherName" className="text-blue-700 font-medium">
+            Father Name
+          </label>
+          <input
+            id="fatherName"
+            value={fatherName}
+            type="text"
+            onChange={(e) => setFatherName(e.target.value)}
+            placeholder="Enter your father's name"
+            className="p-2 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-2">
+          <label htmlFor="admissionNumber" className="text-blue-700 font-medium">
+            Admission Number
+          </label>
+          <input
+            id="admissionNumber"
+            value={admissionNumber}
+            type="number"
+            onChange={(e) => setAdmissionNumber(e.target.value)}
+            placeholder="e.g. Grade 12 Admission Number"
+            className="p-2 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          />
+        </div>
         <button
-          onClick={handleNext}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-950 hover:text-white hover:bg-opacity-20 transition duration-300"
+          type="submit"
+          className="bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
         >
           Continue
         </button>
-      </div>
+      </form>
+    </div>
   );
 }

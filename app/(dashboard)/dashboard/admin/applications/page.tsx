@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { XCircleIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Menu } from "@headlessui/react";
+import * as XLSX from "xlsx";
 
 type StudentRecord = {
   id: string;
@@ -169,6 +170,93 @@ export default function ApplicationsPage() {
     return url.toLowerCase().endsWith(".pdf");
   };
 
+  // Export function to download application data as CSV
+
+  const handleExport = (status: string) => {
+    let dataToExport = [...filtered];
+    if (status !== "ALL") {
+      dataToExport = dataToExport.filter((app) => app.status === status);
+    }
+
+    // Prepare data for Excel
+    const wsData = [
+      [
+        "Student ID",
+        "Full Name",
+        "Institute",
+        "Department",
+        "Academic Year",
+        "Status",
+      ],
+      ...dataToExport.map((app) => [
+        app.studentID,
+        `${app.firstName} ${app.fatherName} ${app.gFatherName}`,
+        app.institute,
+        app.department,
+        app.academicYear,
+        app.status,
+      ]),
+    ];
+
+    // Create worksheet and workbook
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Apply styles
+    const range = XLSX.utils.decode_range(ws["!ref"]!);
+    for (let R = range.s.r; R <= range.e.r; ++R) {
+      for (let C = range.s.c; C <= range.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!ws[cellAddress]) continue;
+
+        // Header row style
+        if (R === 0) {
+          ws[cellAddress].s = {
+            font: { bold: true, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "1E3A8A" } }, // Tailwind's blue-800
+            alignment: { horizontal: "center" },
+            border: {
+              top: { style: "thin", color: { rgb: "000000" } },
+              bottom: { style: "thin", color: { rgb: "000000" } },
+              left: { style: "thin", color: { rgb: "000000" } },
+              right: { style: "thin", color: { rgb: "000000" } },
+            },
+          };
+        } else {
+          ws[cellAddress].s = {
+            border: {
+              top: { style: "thin", color: { rgb: "CCCCCC" } },
+              bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+              left: { style: "thin", color: { rgb: "CCCCCC" } },
+              right: { style: "thin", color: { rgb: "CCCCCC" } },
+            },
+            alignment: { horizontal: "left" },
+          };
+        }
+      }
+    }
+
+    // Column widths
+    ws["!cols"] = [
+      { wch: 15 },
+      { wch: 30 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 12 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Applications");
+
+    // Write the file
+    XLSX.writeFile(
+      wb,
+      `applications_${status.toLowerCase()}_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`
+    );
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white rounded-xl shadow">
       <h1 className="text-3xl font-bold text-blue-600 mb-4">
@@ -260,6 +348,48 @@ export default function ApplicationsPage() {
         >
           Reset Filters
         </button>
+
+        <Menu
+          as="div"
+          className="relative inline-block text-left border-blue-500 "
+        >
+          <Menu.Button className="inline-flex items-center px-4 py-2 border-blue-600 border text-blue-500 text-sm font-medium rounded hover:bg-blue-700 hover:text-white">
+            Export
+            <ChevronDownIcon className="w-4 h-4 ml-1" />
+          </Menu.Button>
+
+          <Menu.Items className="absolute z-10 mt-2 w-48 bg-white border border-blue-400 rounded shadow-lg">
+            {["ALL", "approved", "rejected", "pending"].map((status) => (
+              <Menu.Item key={status}>
+                {({ active }) => (
+                  <div
+                    className={`px-4 py-2 text-sm cursor-pointer ${
+                      active ? "bg-blue-100" : ""
+                    }`}
+                    onClick={() => handleExport(status)}
+                  >
+                    {status} (Excel)
+                  </div>
+                )}
+              </Menu.Item>
+            ))}
+            {/* Optionally add CSV or other formats */}
+            {["ALL", "approved", "rejected", "pending"].map((status) => (
+              <Menu.Item key={status + "-csv"}>
+                {({ active }) => (
+                  <div
+                    className={`px-4 py-2 text-sm cursor-pointer ${
+                      active ? "bg-gray-100" : ""
+                    }`}
+                    onClick={() => handleExport(status, "csv")}
+                  >
+                    {status} (CSV)
+                  </div>
+                )}
+              </Menu.Item>
+            ))}
+          </Menu.Items>
+        </Menu>
       </div>
 
       <div className="text-sm text-gray-500 mb-2">
@@ -269,7 +399,28 @@ export default function ApplicationsPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="flex justify-center items-center py-12">Loading...</div>
+        <div className="flex h-full items-center justify-center py-12">
+          <svg
+            className="animate-spin h-10 w-10 text-blue-500 mb-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+          </svg>
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <XCircleIcon className="w-10 h-10 mx-auto text-gray-300 mb-2" />
@@ -641,23 +792,26 @@ export default function ApplicationsPage() {
             </section>
 
             <div className="mt-6 text-right">
-              
-              
-                {/* <button
-                  onClick={() => updateStatus(selectedApp, "approved")}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  Approve
-                </button>
-                <button
-                  onClick={() => {
-                    setRejectionApp(selectedApp);
-                    setShowRejectionModal(true);
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                >
-                  Reject
-                </button> */}
+              <button
+                onClick={() => {
+                  updateStatus(selectedApp, "approved");
+                  setSelectedApp(null);
+                  
+                }}
+                className="px-4 py-2 border border-green-600 text-green-500 rounded hover:bg-green-700 hover:text-white mr-2"
+              >
+                Approve
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedApp(null);
+                  setRejectionApp(selectedApp);
+                  setShowRejectionModal(true);
+                }}
+                className="px-4 py-2 border border-red-600 text-red-500 rounded hover:bg-red-700 hover:text-white mr-2"
+              >
+                Reject
+              </button>
 
               <button
                 onClick={() => setSelectedApp(null)}

@@ -81,39 +81,46 @@ export default function ApplicationFormPage() {
   });
 
   // Effect to fetch the college data and update the form state
-  useEffect(() => {
+useEffect(() => {
     if (!selectedCollegeId) {
       console.error("No college ID found in the URL");
       return;
     }
 
-    // Fetch college data by ID
-    async function fetchCollegeData() {
+    async function fetchAvailableProgramsForCollege() {
       try {
-        const res = await fetch(
-          `/api/admission/postgraduate/colleges/${selectedCollegeId}`
-        );
+        const res = await fetch("/api/admission/postgraduate/available");
         if (!res.ok) {
-          console.error("Failed to fetch college data:", res.statusText);
+          console.error("Failed to fetch available colleges:", res.statusText);
           return;
         }
-        const collegeData = await res.json();
+        const colleges = await res.json();
 
-        // Update the college data and set it in state
-        setCollege(collegeData);
+        // Use string comparison to avoid type mismatches
+        const foundCollege = colleges.find(
+          (entry: any) => String(entry.college.id) === String(selectedCollegeId)
+        );
 
-        // Set the college name in the formData (institute)
-        setFormData((prev: any) => ({
-          ...prev,
-          institute: collegeData.name, // Save the college name here
-        }));
+        if (foundCollege) {
+          setCollege({
+            name: foundCollege.college.name,
+            programs: foundCollege.programs,
+          });
+
+          setFormData((prev: any) => ({
+            ...prev,
+            institute: foundCollege.college.name,
+          }));
+        } else {
+          console.error("College not found in available list");
+        }
       } catch (error) {
-        console.error("Error fetching college data:", error);
+        console.error("Error fetching available colleges:", error);
       }
     }
 
-    fetchCollegeData();
-  }, [selectedCollegeId]); // Run when selectedCollegeId changes
+    fetchAvailableProgramsForCollege();
+  }, [selectedCollegeId]);
 
   // Effect to handle department change and update form data
   useEffect(() => {

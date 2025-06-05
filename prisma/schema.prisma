@@ -219,3 +219,23 @@ model AvailableProgramPostGraduate {
 
   @@unique([programId, availableCollegeId])
 }
+
+
+
+// Placement System
+
+model StudentPlacement {
+  id        String   @id @default(uuid())
+  studentId String   @unique
+  name      String
+  department String
+  roomId    String?  // Nullable, assigned after placement
+  room      Room?    @relation(fields: [roomId], references: [id])
+}
+
+model Room {
+  id       String   @id @default(uuid())
+  name     String   @unique
+  capacity Int
+  students StudentPlacement[]
+}

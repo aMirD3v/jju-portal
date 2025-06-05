@@ -25,6 +25,7 @@ export default function DashboardHeader() {
           <h1 className="text-2xl md:text-2xl font-bold text-blue-500 ms-5">
             {pathname === "/dashboard/admin" && "Dashboard"}
             {pathname === "/dashboard/admin/applications" && "Applications"}
+            {pathname === "/dashboard/admin/placement" && "Manage Placement"}
             {pathname === "/dashboard/admin/admission" && "Admission"}
             {pathname === "/dashboard/admin/admission/manage" && "Admission"}
             {pathname === "/dashboard/admin/users" && "Manage Users"}
@@ -46,6 +47,10 @@ export default function DashboardHeader() {
             <Link href="/biography" className="hover:text-blue-500">
               Biography
             </Link>
+            <Link href="/placement" className="hover:text-blue-500">
+              Placement
+            </Link>
+            
 
             {status === "loading" ? (
               <div className=" inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -109,30 +114,60 @@ export default function DashboardHeader() {
       </header>
 
       {/* Mobile Sidebar Overlay */}
-      {isOpen && <div className="fixed inset-0 z-40" onClick={toggleSidebar} />}
+  {/* Mobile Sidebar Overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300"
+          onClick={toggleSidebar}
+        />
+      )}
 
-      {/* Mobile Sidebar Drawer */}
       <aside
-        className={`fixed top-0 right-0 w-64 h-full bg-white shadow-lg z-50
+        className={`fixed top-0 right-0 w-72 max-w-full h-full bg-gradient-to-b from-blue-50 to-white shadow-2xl z-50
           transform transition-transform duration-300
-          ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+          ${isOpen ? "translate-x-0" : "translate-x-full"}
+          flex flex-col
+        `}
       >
-        <div className="p-4 flex justify-between items-center border-b">
-          <h2 className="text-xl font-semibold text-blue-800">Menu</h2>
-          <button onClick={toggleSidebar}>
-            <XMarkIcon className="h-6 w-6 text-gray-600" />
+        <div className="p-5 flex justify-between items-center border-b border-blue-100 bg-white/80 rounded-tr-lg">
+          <h2 className="text-2xl font-bold text-blue-700 tracking-wide">Menu</h2>
+          <button
+            onClick={toggleSidebar}
+            className="rounded-full p-2 hover:bg-blue-100 transition"
+            aria-label="Close Menu"
+          >
+            <XMarkIcon className="h-7 w-7 text-blue-500" />
           </button>
         </div>
 
-        <nav className="flex flex-col p-4 space-y-4 text-blue-700 font-medium">
-          <Link href="/" onClick={toggleSidebar}>
+        <nav className="flex flex-col gap-3 p-6 text-blue-800 font-semibold">
+          <Link
+            href="/"
+            onClick={toggleSidebar}
+            className="rounded-lg px-4 py-2 hover:bg-blue-100 transition"
+          >
             Home
           </Link>
-          <Link href="/admission" onClick={toggleSidebar}>
+          <Link
+            href="/admission"
+            onClick={toggleSidebar}
+            className="rounded-lg px-4 py-2 hover:bg-blue-100 transition"
+          >
             Admission
           </Link>
-          <Link href="/biography" onClick={toggleSidebar}>
+          <Link
+            href="/biography"
+            onClick={toggleSidebar}
+            className="rounded-lg px-4 py-2 hover:bg-blue-100 transition"
+          >
             Biography
+          </Link>
+          <Link
+            href="/placement"
+            onClick={toggleSidebar}
+            className="rounded-lg px-4 py-2 hover:bg-blue-100 transition"
+          >
+            Placement
           </Link>
 
           {status === "loading" ? (

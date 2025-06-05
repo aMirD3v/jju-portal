@@ -105,7 +105,7 @@ if (app.studentPhotoUrl) {
   ctx.fillText(` ${app.admission}`, 200, 470);
 
   // Draw the stamp
-  ctx.drawImage(stamp, canvas.width - 540, canvas.height - 370, 320, 300);
+  ctx.drawImage(stamp, canvas.width - 540, canvas.height - 370, 320, 330);
 
   // Return as PNG
   const buffer = canvas.toBuffer("image/png");
