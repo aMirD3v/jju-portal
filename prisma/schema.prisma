@@ -224,18 +224,58 @@ model AvailableProgramPostGraduate {
 
 // Placement System
 
-model StudentPlacement {
-  id        String   @id @default(uuid())
-  studentId String   @unique
-  name      String
-  department String
-  roomId    String?  // Nullable, assigned after placement
-  room      Room?    @relation(fields: [roomId], references: [id])
+model DepartmentExitExam {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  students  StudentExitExam[]
+  sessions  SessionExitExam[]
 }
 
-model Room {
-  id       String   @id @default(uuid())
-  name     String   @unique
-  capacity Int
-  students StudentPlacement[]
+model StudentExitExam {
+  id           String       @id @default(uuid())
+  studentId    String       @unique
+  nationalId   String
+  name         String
+  username     String           
+  password     String                     
+  department   DepartmentExitExam   @relation(fields: [departmentId], references: [id])
+  departmentId String
+  assignments  AssignmentExitExam[]
+  examTopic       String                    
+  gender          String                     
+  enrollmentType  String                  
+  phoneNumber     String                    
+  latestGpa       Float                      
+  year            Int      
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model RoomExitExam {
+  id         String       @id @default(uuid())
+  name       String       @unique
+  capacity   Int
+  assignments AssignmentExitExam[]
+}
+
+model SessionExitExam {
+  id           String       @id @default(uuid())
+  sessionName  String
+  date         DateTime
+  startTime    DateTime
+  endTime      DateTime
+  department   DepartmentExitExam   @relation(fields: [departmentId], references: [id])
+  departmentId String
+  assignments  AssignmentExitExam[]
+}
+
+model AssignmentExitExam {
+  id         String   @id @default(uuid())
+  student    StudentExitExam  @relation(fields: [studentId], references: [id])
+  studentId  String
+  session    SessionExitExam  @relation(fields: [sessionId], references: [id])
+  sessionId  String
+  room       RoomExitExam     @relation(fields: [roomId], references: [id])
+  roomId     String
 }

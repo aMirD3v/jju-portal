@@ -4,7 +4,7 @@ import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { FaSpinner } from "react-icons/fa";
 
-export default function AdminPlacementPage() {
+export default function PlacementPage() {
   const [uploading, setUploading] = useState(false);
   const [roomName, setRoomName] = useState("");
   const [roomCapacity, setRoomCapacity] = useState("");
@@ -14,129 +14,62 @@ export default function AdminPlacementPage() {
     formData.append("file", file);
 
     const uploadToast = toast.loading("Uploading file...");
-
     try {
       setUploading(true);
-
       const res = await fetch(endpoint, { method: "POST", body: formData });
-
-      if (!res.ok) {
-        throw new Error(`Error: ${res.statusText}`);
-      }
-
+      if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
-      toast.success(data.message || "Upload complete!", { id: uploadToast });
+      toast.success(data.message || "Upload successful!", { id: uploadToast });
     } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "An error occurred during upload.", { id: uploadToast });
+      toast.error(error.message || "Upload failed", { id: uploadToast });
     } finally {
       setUploading(false);
     }
   };
 
   const handleAssignRooms = async () => {
-    const assignToast = toast.loading("Assigning rooms...");
-
+    const toastId = toast.loading("Assigning rooms...");
     try {
       setUploading(true);
-
-      const res = await fetch("/api/admin/placement/assign-rooms", { method: "POST" });
-
-      if (!res.ok) {
-        throw new Error(`Error: ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      toast.success(data.message || "Rooms assigned successfully!", { id: assignToast });
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "An error occurred during room assignment.", { id: assignToast });
+      const res = await fetch("/api/admin/placement/exit-exam/assign-rooms", {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Assignment failed");
+      toast.success("Students assigned!", { id: toastId });
+    } catch (err: any) {
+      toast.error(err.message || "Assignment failed", { id: toastId });
     } finally {
       setUploading(false);
     }
   };
 
-  const handleCreateRoom = async () => {
-    if (!roomName || !roomCapacity) {
-      toast.error("Please enter room name and capacity.");
-      return;
-    }
-
-    const createToast = toast.loading("Creating room...");
-
-    try {
-      const res = await fetch("/api/admin/placement/create-room", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: roomName,
-          capacity: Number(roomCapacity),
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Error: ${res.statusText}`);
-      }
-
-      const data = await res.json();
-      toast.success(data.message || "Room created!", { id: createToast });
-
-      setRoomName("");
-      setRoomCapacity("");
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "An error occurred while creating room.", { id: createToast });
-    }
-  };
-
   return (
-    <div className="relative flex flex-col min-h-screen p-8">
+    <div className="relative flex flex-col p-8">
       <Toaster position="top-center" />
 
       <header className="mb-10 text-center">
-        <h1 className="text-4xl font-extrabold text-blue-500 mb-2">Exam and Class Placement</h1>
-        <p className="text-gray-600">Manage student placements and assign rooms seamlessly.</p>
+        <h1 className="text-4xl font-extrabold text-blue-500 mb-2">
+          Exam & Class Placement
+        </h1>
+        <p className="text-gray-600">
+          Manage students and room assignments efficiently.
+        </p>
       </header>
 
       <main className="flex flex-col gap-8 w-full max-w-3xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FileUploadCard
             label="Upload Students Excel"
-            endpoint="/api/admin/placement/upload-students"
+            endpoint="/api/admin/placement/exit-exam/upload-students"
             disabled={uploading}
             onUpload={handleFileUpload}
           />
           <FileUploadCard
             label="Upload Rooms Excel"
-            endpoint="/api/admin/placement/upload-rooms"
+            endpoint="/api/admin/placement/exit-exam/upload-rooms"
             disabled={uploading}
             onUpload={handleFileUpload}
           />
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-blue-200 hover:shadow-xl transition flex flex-col gap-4">
-          <h2 className="text-xl font-semibold text-blue-500">Manually Add Room</h2>
-          <input
-            type="text"
-            placeholder="Room Name"
-            value={roomName}
-            onChange={(e) => setRoomName(e.target.value)}
-            className="p-2 border rounded w-full focus:ring-2 focus:ring-blue-300"
-          />
-          <input
-            type="number"
-            placeholder="Capacity"
-            value={roomCapacity}
-            onChange={(e) => setRoomCapacity(e.target.value)}
-            className="p-2 border rounded w-full focus:ring-2 focus:ring-blue-300"
-          />
-          <button
-            onClick={handleCreateRoom}
-            disabled={uploading}
-            className="border bg-blue-50 border-blue-500 text-blue-500 px-4 py-2 rounded hover:bg-blue-500 hover:text-white transition"
-          >
-            Create Room
-          </button>
         </div>
 
         <div className="flex flex-col gap-4 items-center">
@@ -151,22 +84,14 @@ export default function AdminPlacementPage() {
             {uploading ? "Processing..." : "Assign Rooms"}
           </button>
 
-           <Link
-    href="/dashboard/admin/placement/view"
-    className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition"
-  >
-    View Results
-  </Link>
-
           {uploading && (
-            <div className="flex items-center gap-2 text-gray-600 animate-pulse" aria-busy="true">
-              <FaSpinner className="animate-spin" /> Please wait, this may take some time...
+            <div className="flex items-center gap-2 text-gray-600 animate-pulse">
+              <FaSpinner className="animate-spin" /> Please wait, this may take
+              some time...
             </div>
           )}
         </div>
       </main>
-
-    
     </div>
   );
 }
@@ -178,7 +103,12 @@ interface FileUploadCardProps {
   onUpload: (endpoint: string, file: File) => void;
 }
 
-function FileUploadCard({ label, endpoint, disabled, onUpload }: FileUploadCardProps) {
+function FileUploadCard({
+  label,
+  endpoint,
+  disabled,
+  onUpload,
+}: FileUploadCardProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -195,8 +125,59 @@ function FileUploadCard({ label, endpoint, disabled, onUpload }: FileUploadCardP
         accept=".xlsx, .xls"
         onChange={handleFileChange}
         disabled={disabled}
-        className="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300 transition cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-blue-700 hover:file:bg-purple-100"
+        className="w-full border mb-2 border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-300 transition cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-blue-700 hover:file:bg-purple-100"
       />
+
+      {label.includes("Rooms") && (
+        <a
+          href="/templates/rooms-template.xlsx"
+          className="flex items-center gap-1 text-sm text-blue-500 underline hover:text-blue-700 transition"
+          download
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 4v12m0 0l-4-4m4 4l4-4"
+            />
+          </svg>
+          Download Rooms Template
+        </a>
+      )}
+      {label.includes("Students") && (
+        <a
+          href="/templates/students-template.xlsx"
+          className="flex items-center gap-1 text-sm text-blue-500 underline hover:text-blue-700 transition"
+          download
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 4v12m0 0l-4-4m4 4l4-4"
+            />
+          </svg>
+          Download Students Template
+        </a>
+      )}
+      {disabled && (
+        <div className="mt-2 text-gray-500 text-sm">
+          <FaSpinner className="animate-spin inline-block mr-1" />
+          Uploading...
+        </div>
+      )}
     </div>
   );
 }
