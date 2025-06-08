@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaChevronDown, FaChevronUp, FaUniversity } from "react-icons/fa";
-
+import {
+  FaClock,
+  FaCheckCircle,
+  FaLock,
+  FaChevronDown,
+  FaChevronUp,
+  FaUniversity,
+} from "react-icons/fa";
 
 function StatusBanner({
   applicationStarted,
@@ -16,33 +22,42 @@ function StatusBanner({
   if (!applicationStarted && !applicationEnded) {
     return (
       <div className="flex justify-center mb-4">
-        <span className="bg-orange-50 text-orange-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-orange-200 text-base">
+        <span className="bg-orange-50 text-orange-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-orange-200 text-base flex items-center gap-2">
+          <FaClock className="text-orange-600 animate-pulse" />
           Applications open on: <b>{APPLICATION_START.toLocaleDateString()}</b>
         </span>
       </div>
     );
   }
+
   if (applicationStarted && !applicationEnded) {
     return (
       <div className="flex flex-col items-center mb-6">
-        <span className="bg-green-50 text-green-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-green-200 text-base mb-2">
-          Applications are open! Deadline: <b>{APPLICATION_DEADLINE.toLocaleDateString()}</b>
+        <span className="bg-green-50 text-green-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-green-200 text-base mb-2 flex items-center gap-2">
+          <FaCheckCircle className="text-green-600" />
+          Applications are open! Deadline:{" "}
+          <b>{APPLICATION_DEADLINE.toLocaleDateString()}</b>
         </span>
         <span className="text-blue-500 font-medium text-sm">
-          <b>{colleges.length}</b> Colleges / <b>{totalPrograms}</b> Departments available
+          <b>{colleges.length}</b> Colleges / <b>{totalPrograms}</b> Departments
+          available
         </span>
       </div>
     );
   }
+
   if (applicationEnded) {
     return (
       <div className="flex justify-center">
-        <span className="bg-red-50 text-red-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-red-200 text-base">
-          The application deadline was on: <b>{APPLICATION_DEADLINE.toLocaleDateString()}</b>
+        <span className="bg-red-50 text-red-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-red-200 text-base flex items-center gap-2">
+          <FaLock className="text-red-600" />
+          The application deadline was on:{" "}
+          <b>{APPLICATION_DEADLINE.toLocaleDateString()}</b>
         </span>
       </div>
     );
   }
+
   return null;
 }
 
@@ -198,9 +213,13 @@ export default function UndergraduatePage() {
   };
 
   const handleApply = (collegeName: string) => {
-    const collegeEntry = colleges.find((entry) => entry.college.name === collegeName);
+    const collegeEntry = colleges.find(
+      (entry) => entry.college.name === collegeName
+    );
     if (collegeEntry && collegeEntry.college && collegeEntry.college.id) {
-      router.push(`/admission/postgraduate/apply?collegeId=${collegeEntry.college.id}`);
+      router.push(
+        `/admission/postgraduate/apply?collegeId=${collegeEntry.college.id}`
+      );
     }
   };
 
@@ -211,7 +230,8 @@ export default function UndergraduatePage() {
           Postgraduate Programs
         </h1>
         <p className="text-center text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-          Explore our diverse colleges and departments. Expand a college to see available programs and apply directly.
+          Explore our diverse colleges and departments. Expand a college to see
+          available programs and apply directly.
         </p>
         <StatusBanner
           applicationStarted={applicationStarted}
@@ -261,4 +281,3 @@ export default function UndergraduatePage() {
     </div>
   );
 }
-

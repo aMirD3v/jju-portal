@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaChevronDown, FaChevronUp, FaUniversity } from "react-icons/fa";
-
+import { FaChevronDown, FaChevronUp, FaUniversity, FaClock, FaCheckCircle, FaExclamationCircle, FaLock } from "react-icons/fa";
 
 function StatusBanner({
   applicationStarted,
@@ -16,16 +15,19 @@ function StatusBanner({
   if (!applicationStarted && !applicationEnded) {
     return (
       <div className="flex justify-center mb-4">
-        <span className="bg-orange-50 text-orange-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-orange-200 text-base">
+        <span className="bg-orange-50 text-orange-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-orange-200 text-base flex items-center gap-2">
+          <FaClock className="text-orange-600" />
           Applications open on: <b>{APPLICATION_START.toLocaleDateString()}</b>
         </span>
       </div>
     );
   }
+
   if (applicationStarted && !applicationEnded) {
     return (
       <div className="flex flex-col items-center mb-6">
-        <span className="bg-green-50 text-green-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-green-200 text-base mb-2">
+        <span className="bg-green-50 text-green-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-green-200 text-base mb-2 flex items-center gap-2">
+          <FaCheckCircle className="text-green-600" />
           Applications are open! Deadline: <b>{APPLICATION_DEADLINE.toLocaleDateString()}</b>
         </span>
         <span className="text-blue-500 font-medium text-sm">
@@ -34,15 +36,18 @@ function StatusBanner({
       </div>
     );
   }
+
   if (applicationEnded) {
     return (
       <div className="flex justify-center">
-        <span className="bg-red-50 text-red-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-red-200 text-base">
+        <span className="bg-red-50 text-red-700 px-6 py-3 rounded-xl font-semibold shadow-md border border-red-200 text-base flex items-center gap-2">
+          <FaLock className="text-red-600" />
           The application deadline was on: <b>{APPLICATION_DEADLINE.toLocaleDateString()}</b>
         </span>
       </div>
     );
   }
+
   return null;
 }
 
@@ -83,9 +88,7 @@ function CollegeCard({
       </button>
       <div
         id={`college-panel-${college.name}`}
-        className={`transition-all duration-300 overflow-hidden ${
-          expanded === college.name ? "max-h-96" : "max-h-0"
-        }`}
+        className={`transition-all duration-300 overflow-hidden ${expanded === college.name ? "max-h-96" : "max-h-0"}`}
       >
         {expanded === college.name && (
           <div className="px-10 py-7 bg-white border-t border-blue-100 rounded-b-3xl">
@@ -94,15 +97,10 @@ function CollegeCard({
             </h3>
             <ul className="space-y-3 mb-7">
               {programs.map((program: any, i: number) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-3 text-blue-900 bg-blue-50 rounded-lg px-4 py-2 shadow-sm"
-                >
+                <li key={i} className="flex items-center gap-3 text-blue-900 bg-blue-50 rounded-lg px-4 py-2 shadow-sm">
                   <span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />
                   <span className="font-medium">{program.name}</span>
-                  <span className="ml-2 text-xs text-gray-500">
-                    ({program.year} years)
-                  </span>
+                  <span className="ml-2 text-xs text-gray-500">({program.year} years)</span>
                 </li>
               ))}
             </ul>
@@ -157,7 +155,7 @@ export default function UndergraduatePage() {
 
   if (!appConfig) {
     return (
-     <div className="flex h-full items-center justify-center py-12">
+      <div className="flex h-full items-center justify-center py-12">
         <svg
           className="animate-spin h-10 w-10 text-blue-500 mb-4"
           xmlns="http://www.w3.org/2000/svg"
@@ -261,4 +259,3 @@ export default function UndergraduatePage() {
     </div>
   );
 }
-
