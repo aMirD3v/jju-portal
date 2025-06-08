@@ -9,6 +9,11 @@ export default function StudentExitExamPage() {
   const [loading, setLoading] = useState(false);
   const [studentData, setStudentData] = useState<null | {
     studentName: string;
+    username: string;
+    password: string;
+    gender: string;
+    enrollmentType: string;
+    year: number;
     assignments: {
       sessionName: string;
       date: string;
@@ -31,12 +36,20 @@ export default function StudentExitExamPage() {
       const res = await fetch(
         `/api/student/placement/exit-exam?studentId=${studentId.trim()}`
       );
-      if (!res.ok)
+
+      if (!res.ok) {
         throw new Error("Student not found or error retrieving data.");
+      }
 
       const data = await res.json();
+
       setStudentData({
         studentName: data.studentName,
+        username: data.username,
+        password: data.password,
+        gender: data.gender,
+        enrollmentType: data.enrollmentType,
+        year: data.year,
         assignments: data.assignments.map((a: any) => ({
           sessionName: a.sessionName,
           date: new Date(a.date).toLocaleDateString(undefined, {
@@ -96,24 +109,27 @@ export default function StudentExitExamPage() {
           <h2 className="text-xl font-bold text-blue-500 mb-4">
             Placements for {studentData.studentName}
           </h2>
+
+          <div className="mb-6 text-sm space-y-1">
+            <p><strong>Username:</strong> {studentData.username}</p>
+            <p><strong>Password:</strong> {studentData.password}</p>
+            <p><strong>Gender:</strong> {studentData.gender}</p>
+            <p><strong>Enrollment Type:</strong> {studentData.enrollmentType}</p>
+            <p><strong>Year:</strong> {studentData.year}</p>
+          </div>
+
           {studentData.assignments.length === 0 ? (
             <p>No Placements found.</p>
           ) : (
             <ul className="space-y-4">
               {studentData.assignments.map((a, i) => (
                 <li key={i} className="border-l-4 border-blue-500 pl-4">
-                  <p>
-                    <strong>Session:</strong> {a.sessionName}
-                  </p>
-                  <p>
-                    <strong>Date:</strong> {a.date}
-                  </p>
-                  <p>
-                    <strong>Time:</strong> {a.startTime} - {a.endTime}
-                  </p>
+                  <p><strong>Session:</strong> {a.sessionName}</p>
+                  <p><strong>Date:</strong> {a.date}</p>
+                  <p><strong>Time:</strong> {a.startTime} - {a.endTime}</p>
                   <p>
                     <strong>Room:</strong>{" "}
-                    <strong className="text-blue-800">{a.roomName}</strong>
+                    <span className="text-blue-800 font-semibold">{a.roomName}</span>
                   </p>
                 </li>
               ))}

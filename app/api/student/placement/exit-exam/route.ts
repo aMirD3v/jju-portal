@@ -11,31 +11,40 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Missing studentId parameter.' }, { status: 400 });
     }
 
-    const student = await prisma.studentExitExam.findUnique({
-      where: { studentId },
+const student = await prisma.studentExitExam.findUnique({
+  where: { studentId },
+  include: {
+    assignments: {
       include: {
-        assignments: {
-          include: {
-            session: true,
-            room: true,
-          },
-        },
+        session: true,
+        room: true,
       },
-    });
+    },
+  },
+});
 
-    if (!student) {
-      return NextResponse.json({ error: 'Student not found.' }, { status: 404 });
-    }
+if (!student) {
+  return NextResponse.json({ error: 'Student not found.' }, { status: 404 });
+}
 
-    const assignments = student.assignments.map((assignment) => ({
-      sessionName: assignment.session.sessionName,
-      date: assignment.session.date,
-      startTime: assignment.session.startTime,
-      endTime: assignment.session.endTime,
-      roomName: assignment.room.name,
-    }));
+const assignments = student.assignments.map((assignment) => ({
+  sessionName: assignment.session.sessionName,
+  date: assignment.session.date,
+  startTime: assignment.session.startTime,
+  endTime: assignment.session.endTime,
+  roomName: assignment.room.name,
+}));
 
-    return NextResponse.json({ studentName: student.name, assignments });
+return NextResponse.json({
+  studentName: student.name,
+  username: student.username,
+  password: student.password,
+  gender: student.gender,
+  enrollmentType: student.enrollmentType,
+  year: student.year,
+  assignments,
+});
+
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Failed to retrieve student assignments.' }, { status: 500 });
