@@ -3,8 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import { Toaster } from "react-hot-toast";
 import AuthSessionProvider from "@/components/AuthSessionProvider";
-import DashboardHeader from "@/components/DashboardComponents/DashboardHeader";
-import DashboardSidebar from "@/components/DashboardComponents/Sidebar";
+import DashboardLayout from "@/components/DashboardComponents/DashboardLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,9 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <AuthSessionProvider>
@@ -41,11 +38,8 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
         >
           <Toaster position="top-center" />
-          <DashboardHeader />
-          <DashboardSidebar />
-          <main className=" ml-60 p-6">
-            <div className="mx-auto max-w-6xl">{children}</div>
-          </main>
+          {/* Combined header + sidebar layout */}
+          <DashboardLayout>{children}</DashboardLayout>
         </body>
       </AuthSessionProvider>
     </html>

@@ -65,7 +65,7 @@ export default function StudentExitExamPage() {
   };
 
   return (
-    <div className="min-h-screen p-8 flex flex-col items-center">
+    <div className="p-8 flex flex-col items-center">
       <Toaster position="top-center" />
       <h1 className="text-4xl font-extrabold text-blue-600 mb-6">
         Exit Exam Placement

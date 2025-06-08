@@ -7,7 +7,7 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   if (pathname.startsWith('/dashboard')) {
-    if (!token) return NextResponse.redirect(new URL('/login', req.url));
+    if (!token) return NextResponse.redirect(new URL('/', req.url));
 
     const role = token.role;
     if (pathname.startsWith('/dashboard/admin') && role !== 'admin') {
