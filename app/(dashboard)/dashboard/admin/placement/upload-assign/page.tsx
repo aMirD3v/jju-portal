@@ -3,27 +3,74 @@ import Link from "next/link";
 import { useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { FaSpinner } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 export default function PlacementPage() {
   const [uploading, setUploading] = useState(false);
-  const [roomName, setRoomName] = useState("");
-  const [roomCapacity, setRoomCapacity] = useState("");
+  const [uploadProgress, setUploadProgress] = useState<Record<string, { total: number; current: number }>>({});
 
-  const handleFileUpload = async (endpoint: string, file: File) => {
+  const handleFileUpload = async (endpoint: string, file: File, label: string) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const uploadToast = toast.loading("Uploading file...");
+    const toastId = toast.loading(`Preparing to upload ${label}...`);
     try {
       setUploading(true);
-      const res = await fetch(endpoint, { method: "POST", body: formData });
+      setUploadProgress((prev) => ({ ...prev, [label]: { total: 0, current: 0 } }));
+
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+      setUploadProgress((prev) => ({
+        ...prev,
+        [label]: { total: data.length, current: 0 },
+      }));
+
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 1;
+        if (progress <= data.length) {
+          setUploadProgress((prev) => ({
+            ...prev,
+            [label]: { total: data.length, current: progress },
+          }));
+        } else {
+          clearInterval(interval);
+        }
+      }, 60);
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        body: formData,
+      });
+
+      clearInterval(interval);
+
       if (!res.ok) throw new Error("Upload failed");
-      const data = await res.json();
-      toast.success(data.message || "Upload successful!", { id: uploadToast });
+
+      const result = await res.json();
+      toast.success(`✅ ${label} uploaded successfully!`, { id: toastId });
+
+      toast(
+        `${label} upload complete!\n📄 File: ${file.name}\n🔢 Rows: ${data.length}`,
+        {
+          icon: "🎉",
+          duration: 7000,
+          style: { whiteSpace: "pre-line" },
+        }
+      );
     } catch (error: any) {
-      toast.error(error.message || "Upload failed", { id: uploadToast });
+      toast.error(error.message || "Upload failed", { id: toastId });
     } finally {
       setUploading(false);
+      setTimeout(() => {
+        setUploadProgress((prev) => ({
+          ...prev,
+          [label]: { total: 0, current: 0 },
+        }));
+      }, 3000);
     }
   };
 
@@ -46,14 +93,9 @@ export default function PlacementPage() {
   return (
     <div className="relative flex flex-col p-8">
       <Toaster position="top-center" />
-
       <header className="mb-10 text-center">
-        <h1 className="text-4xl font-extrabold text-blue-500 mb-2">
-          Exam & Class Placement
-        </h1>
-        <p className="text-gray-600">
-          Manage students and room assignments efficiently.
-        </p>
+        <h1 className="text-4xl font-extrabold text-blue-500 mb-2">Exam & Class Placement</h1>
+        <p className="text-gray-600">Manage students and room assignments efficiently.</p>
       </header>
 
       <main className="flex flex-col gap-8 w-full max-w-3xl mx-auto">
@@ -62,13 +104,15 @@ export default function PlacementPage() {
             label="Upload Students Excel"
             endpoint="/api/admin/placement/exit-exam/upload-students"
             disabled={uploading}
-            onUpload={handleFileUpload}
+            onUpload={(endpoint, file) => handleFileUpload(endpoint, file, "students")}
+            progress={uploadProgress["students"] || { total: 0, current: 0 }}
           />
           <FileUploadCard
             label="Upload Rooms Excel"
             endpoint="/api/admin/placement/exit-exam/upload-rooms"
             disabled={uploading}
-            onUpload={handleFileUpload}
+            onUpload={(endpoint, file) => handleFileUpload(endpoint, file, "rooms")}
+            progress={uploadProgress["rooms"] || { total: 0, current: 0 }}
           />
         </div>
 
@@ -86,8 +130,7 @@ export default function PlacementPage() {
 
           {uploading && (
             <div className="flex items-center gap-2 text-gray-600 animate-pulse">
-              <FaSpinner className="animate-spin" /> Please wait, this may take
-              some time...
+              <FaSpinner className="animate-spin" /> Please wait, this may take some time...
             </div>
           )}
         </div>
@@ -101,6 +144,7 @@ interface FileUploadCardProps {
   endpoint: string;
   disabled: boolean;
   onUpload: (endpoint: string, file: File) => void;
+  progress: { total: number; current: number };
 }
 
 function FileUploadCard({
@@ -108,6 +152,7 @@ function FileUploadCard({
   endpoint,
   disabled,
   onUpload,
+  progress,
 }: FileUploadCardProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -134,48 +179,43 @@ function FileUploadCard({
           className="flex items-center gap-1 text-sm text-blue-500 underline hover:text-blue-700 transition"
           download
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4v12m0 0l-4-4m4 4l4-4"
-            />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4" />
           </svg>
           Download Rooms Template
         </a>
       )}
+
       {label.includes("Students") && (
         <a
           href="/templates/students-template.xlsx"
           className="flex items-center gap-1 text-sm text-blue-500 underline hover:text-blue-700 transition"
           download
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 4v12m0 0l-4-4m4 4l4-4"
-            />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v12m0 0l-4-4m4 4l4-4" />
           </svg>
           Download Students Template
         </a>
       )}
-      {disabled && (
-        <div className="mt-2 text-gray-500 text-sm">
-          <FaSpinner className="animate-spin inline-block mr-1" />
-          Uploading...
+
+      {progress.total > 0 && progress.current < progress.total && (
+        <div className="mt-3 w-full text-sm text-gray-600">
+          Uploading {label.includes("Room") ? "Room" : "Student"} {progress.current} of {progress.total}
+          <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+            <div
+              className="bg-blue-500 h-2 rounded-full transition-all"
+              style={{
+                width: `${Math.min(100, (progress.current / progress.total) * 100)}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {progress.total > 0 && progress.current === progress.total && (
+        <div className="mt-2 text-green-600 font-semibold">
+          ✅ Done uploading {label.toLowerCase()}!
         </div>
       )}
     </div>

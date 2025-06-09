@@ -6,7 +6,7 @@ export async function DELETE() {
     // First clear assignments
     await prisma.assignmentExitExam.deleteMany({});
     // Then clear students
-    await prisma.studentExitExam.deleteMany({});
+    // await prisma.studentExitExam.deleteMany({});
 
     return NextResponse.json(
       { message: "All assignments and students cleared successfully" },

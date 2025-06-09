@@ -234,21 +234,21 @@ model DepartmentExitExam {
 model StudentExitExam {
   id           String       @id @default(uuid())
   studentId    String       @unique
-  nationalId   String
-  name         String
-  username     String           
-  password     String                     
+  nationalId   String?
+  name         String?
+  username     String?           
+  password     String?                    
   department   DepartmentExitExam   @relation(fields: [departmentId], references: [id])
   departmentId String
   assignments  AssignmentExitExam[]
-  examTopic       String                    
-  gender          String                     
-  enrollmentType  String                  
-  phoneNumber     String                    
-  latestGpa       Float                      
-  year            Int      
+  examTopic       String?                    
+  gender          String?                     
+  enrollmentType  String?                 
+  phoneNumber     String?                    
+  latestGpa       Float?                      
+  year            Int?      
 
-  createdAt       DateTime @default(now())
+  createdAt       DateTime @default(now())  
   updatedAt       DateTime @updatedAt
 }
 

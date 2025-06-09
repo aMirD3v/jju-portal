@@ -110,43 +110,68 @@ export default function CreateSessionPage() {
             Create New Session
           </h2>
           <div className="flex flex-col gap-3">
-            <input
-              type="text"
-              placeholder="Session Name"
-              value={sessionName}
-              onChange={(e) => setSessionName(e.target.value)}
-              className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="p-3 border rounded"
-            />
-            <input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="p-3 border rounded"
-            />
-            <input
-              type="time"
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              className="p-3 border rounded"
-            />
-            <select
-              value={departmentId}
-              onChange={(e) => setDepartmentId(e.target.value)}
-              className="p-3 border rounded"
-            >
-              <option value="">Select Department</option>
-              {departments.map((dept: any) => (
-                <option key={dept.id} value={dept.id}>
-                  {dept.name}
-                </option>
-              ))}
-            </select>
+            <label className="flex flex-col gap-1">
+              <span className="font-medium">Session Name</span>
+              <input
+                id="sessionName"
+                type="text"
+                placeholder="Enter session name"
+                value={sessionName}
+                onChange={(e) => setSessionName(e.target.value)}
+                className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="font-medium">Date</span>
+              <input
+                id="sessionDate"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="p-3 border rounded"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="font-medium">Start Time</span>
+              <input
+                id="startTime"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="p-3 border rounded"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="font-medium">End Time</span>
+              <input
+                id="endTime"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="p-3 border rounded"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1">
+              <span className="font-medium">Department</span>
+              <select
+                id="departmentSelect"
+                value={departmentId}
+                onChange={(e) => setDepartmentId(e.target.value)}
+                className="p-3 border rounded"
+              >
+                <option value="">Select Department</option>
+                {departments.map((dept: any) => (
+                  <option key={dept.id} value={dept.id}>
+                    {dept.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <button
               onClick={handleSubmit}
               disabled={loading}

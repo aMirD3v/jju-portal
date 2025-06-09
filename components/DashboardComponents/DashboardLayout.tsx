@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const routes: Record<string, string> = {
       "/dashboard/admin": "Dashboard",
       "/dashboard/admin/applications": "Applications",
-        "/dashboard/admin/placement/departments": "Create Department",
+        // "/dashboard/admin/placement/departments": "Create Department",
         "/dashboard/admin/placement/create-session": "Create Session",
         "/dashboard/admin/placement/upload-assign": "Placement",
         "/dashboard/admin/placement/view": "View Results",
@@ -115,11 +115,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </button>
       {openMenus.placement && (
         <div className="ml-4 mt-1 space-y-1">
-          <Link href="/dashboard/admin/placement/departments" onClick={() => setSidebarOpen(false)}>
+          {/* <Link href="/dashboard/admin/placement/departments" onClick={() => setSidebarOpen(false)}>
             <span className={linkClass("/dashboard/admin/placement/departments")}>
               Create Department
             </span>
-          </Link>
+          </Link> */}
           <Link href="/dashboard/admin/placement/create-session" onClick={() => setSidebarOpen(false)}>
             <span className={linkClass("/dashboard/admin/placement/create-session")}>
               Create Session

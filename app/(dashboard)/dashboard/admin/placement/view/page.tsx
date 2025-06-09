@@ -5,7 +5,6 @@ import { FaSpinner, FaSort, FaSortUp, FaSortDown } from "react-icons/fa";
 import { Toaster, toast } from "react-hot-toast";
 
 interface Assignment {
-  id: string;
   student: {
     studentId: string;
     nationalId?: string;
@@ -21,8 +20,6 @@ interface Assignment {
     phoneNumber?: string;
     latestGpa?: number;
     year?: string;
-    createdAt?: string;
-    updatedAt?: string;
   };
   room: {
     name: string;
@@ -100,7 +97,6 @@ export default function ViewResultsPage() {
   const exportCSV = () => {
     const rows = [
       [
-        "ID",
         "Student ID",
         "National ID",
         "Name",
@@ -113,8 +109,6 @@ export default function ViewResultsPage() {
         "Phone Number",
         "Latest GPA",
         "Year",
-        "Created At",
-        "Updated At",
         "Room",
         "Session Name",
         "Session Date",
@@ -122,7 +116,6 @@ export default function ViewResultsPage() {
         "End Time",
       ],
       ...assignments.map((a) => [
-        a.id,
         a.student.studentId ?? "",
         a.student.nationalId ?? "",
         a.student.name ?? "",
@@ -135,12 +128,6 @@ export default function ViewResultsPage() {
         a.student.phoneNumber ?? "",
         a.student.latestGpa?.toString() ?? "",
         a.student.year ?? "",
-        a.student.createdAt
-          ? new Date(a.student.createdAt).toLocaleString()
-          : "",
-        a.student.updatedAt
-          ? new Date(a.student.updatedAt).toLocaleString()
-          : "",
         a.room.name ?? "",
         a.session.sessionName ?? "",
         a.session.date ? new Date(a.session.date).toLocaleDateString() : "",
