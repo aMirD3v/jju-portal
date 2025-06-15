@@ -25,6 +25,49 @@ model User {
 }
 
 
+// Student One Card System
+
+enum AccessType {
+  GATE
+  LIBRARY
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+}
+
+model StudentUser {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  studentId String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  AccessLog        AccessLog[]
+  CafeteriaAccess CafeteriaAccess[]
+}
+
+model AccessLog {
+  id        String   @id @default(uuid())
+  student   StudentUser @relation(fields: [studentId], references: [id])
+  studentId String
+  accessType AccessType
+  timestamp DateTime @default(now())
+}
+
+model CafeteriaAccess {
+  id        String   @id @default(uuid())
+  student   StudentUser @relation(fields: [studentId], references: [id])
+  studentId String
+  mealType  MealType
+  date      DateTime @default(now()) // We'll use this to enforce daily limits
+}
+
+
+
 // Student application model for undergraduate programs
 
 model StudentApplication {

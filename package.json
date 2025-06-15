@@ -21,6 +21,7 @@
     "@prisma/client": "^6.8.2",
     "apexcharts": "^4.7.0",
     "bcryptjs": "^3.0.2",
+    "bwip-js": "^4.6.0",
     "canvas": "^3.1.0",
     "firebase": "^11.7.3",
     "firebase-admin": "^13.4.0",
@@ -44,6 +45,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/bwip-js": "^3.2.3",
     "@types/node": "^20.17.52",
     "@types/nodemailer": "^6.4.17",
     "@types/pdfkit": "^0.13.9",
